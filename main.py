@@ -1,6 +1,10 @@
+from sources import lecture_page_sondage
+
 def main():
-    print("Hello from sondage-presidentielle!")
+    return lecture_page_sondage.main()
+    
 
 
 if __name__ == "__main__":
-    main()
+    sondages = main()
+    print(sondages)

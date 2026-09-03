@@ -8,7 +8,7 @@ from typing import List
 
 from bs4 import BeautifulSoup, Tag
 
-from utilitaires_texte import normaliser_texte
+from .utilitaires_texte import normaliser_texte
 
 logger = logging.getLogger(__name__)
 

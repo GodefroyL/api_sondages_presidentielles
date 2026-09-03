@@ -10,9 +10,9 @@ from typing import Dict, List, Optional
 
 from bs4 import Tag
 
-from config import ENTETES_NON_CANDIDATS, MOTS_RESIDUELS_IGNORES
-from tableau_html import GrilleTableau, deplier_tableau, texte_cellule, ligne_est_uniquement_entete
-from utilitaires_texte import normaliser_texte, extraire_valeur_et_reste
+from .config import ENTETES_NON_CANDIDATS, MOTS_RESIDUELS_IGNORES
+from .tableau_html import GrilleTableau, deplier_tableau, texte_cellule, ligne_est_uniquement_entete
+from .utilitaires_texte import normaliser_texte, extraire_valeur_et_reste
 
 logger = logging.getLogger(__name__)
 

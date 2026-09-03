@@ -33,9 +33,9 @@ from typing import Dict
 import requests
 from bs4 import BeautifulSoup
 
-from config import DELAI_MAXIMUM_REQUETE, EN_TETE_HTTP, TITRE_SECTION, URL_PAGE_WIKIPEDIA
-from analyse_sondages import Sondage, analyser_tableau_sondage
-from section_wikipedia import trouver_tableaux_section
+from .config import DELAI_MAXIMUM_REQUETE, EN_TETE_HTTP, TITRE_SECTION, URL_PAGE_WIKIPEDIA
+from .analyse_sondages import Sondage, analyser_tableau_sondage
+from .section_wikipedia import trouver_tableaux_section
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ def analyser_arguments() -> argparse.Namespace:
     return analyseur.parse_args()
 
 
-def lecture_page_sondage() -> None:
+def main() -> None:
     arguments = analyser_arguments()
     configurer_journalisation(arguments.debug)
 
@@ -117,5 +117,5 @@ def lecture_page_sondage() -> None:
 
 
 if __name__ == "__main__":
-    sondages = lecture_page_sondage()
+    sondages = main()
     print(sondages)
