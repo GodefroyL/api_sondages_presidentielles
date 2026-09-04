@@ -4,7 +4,7 @@ Fonctions bas niveau pour manipuler des tableaux HTML issus de Wikipédia :
 - extraction du texte d'une cellule (avec repli sur les images/liens).
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from bs4 import Tag
 

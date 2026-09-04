@@ -3,14 +3,12 @@ Localisation, dans le HTML de la page Wikipédia, de la section d'intérêt
 et des tableaux de sondages qu'elle contient (y compris ses sous-sections).
 """
 
-import logging
 from typing import List
 
 from bs4 import BeautifulSoup, Tag
 
 from .utilitaires_texte import normaliser_texte
 
-logger = logging.getLogger(__name__)
 
 NIVEAUX_TITRES = ("h2", "h3", "h4")
 
@@ -44,12 +42,6 @@ def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> List[T
     titre_section_html = trouver_titre_section(soupe, titre_section)
     niveau_section = int(titre_section_html.name[1])
 
-    logger.debug(
-        "Section trouvée : <%s> %r",
-        titre_section_html.name,
-        titre_section_html.get_text(strip=True),
-    )
-
     tableaux: List[Tag] = []
     for element_suivant in titre_section_html.find_all_next():
         if element_suivant is titre_section_html:
@@ -59,16 +51,10 @@ def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> List[T
             niveau_element = int(element_suivant.name[1])
             if niveau_element <= niveau_section:
                 break
-            logger.debug(
-                "  sous-section rencontrée : <%s> %r",
-                element_suivant.name,
-                element_suivant.get_text(strip=True),
-            )
 
         if element_suivant.name == "table":
             classes_css = element_suivant.get("class", []) or []
             if "wikitable" in classes_css:
                 tableaux.append(element_suivant)
 
-    logger.debug("%d tableau(x) 'wikitable' trouvé(s) dans la section.", len(tableaux))
     return tableaux

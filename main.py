@@ -8,14 +8,21 @@ app = FastAPI()
 def read_root():
     return {"message": "Bienvenue sur l'API des sondages du premier tour de l'élection présidentielle."}
 
-@app.get("/sondages")
-def get_sondages():
+@app.get("/premier_tour/{annee}")
+def get_sondages_premer_tour(annee: str):
     """
     Endpoint pour récupérer les sondages du premier tour de l'élection présidentielle.
     """
-    sondages = lecture_page_sondage.recuperer_sondages_premier_tour()
-    return sondages
+    if annee not in ["2017", "2022", "2027"]: return {"error": "Année invalide. Veuillez utiliser 2017, 2022 ou 2027."}
+    else: return lecture_page_sondage.main(annee)
+
+@app.get("/second_tour/{annee}")
+def get_sondages_second_tour(annee: str):
+    """
+    Endpoint pour récupérer les sondages du second tour de l'élection présidentielle.
+    """
+    return {"message": f"Récupération des sondages du second tour n'est pas encore implémentée."}
 
 if __name__ == "__main__":
-    sondages = get_sondages()
+    sondages = get_sondages_premer_tour("2027")
     print(sondages)

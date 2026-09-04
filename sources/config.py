@@ -5,7 +5,7 @@ Constantes de configuration pour le récupérateur de sondages.
 # URL de la page Wikipédia listant les sondages de la présidentielle 2027
 URL_PAGE_WIKIPEDIA = (
     "https://fr.wikipedia.org/wiki/"
-    "Liste_de_sondages_sur_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027"
+    "Liste_de_sondages_sur_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_"
 )
 
 # Titre exact de la section à analyser

@@ -4,7 +4,6 @@ reconstruction des en-têtes, association nom de candidat / résultat, et
 production des objets Sondage.
 """
 
-import logging
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
@@ -14,7 +13,6 @@ from .config import ENTETES_NON_CANDIDATS, MOTS_RESIDUELS_IGNORES
 from .tableau_html import GrilleTableau, deplier_tableau, texte_cellule, ligne_est_uniquement_entete
 from .utilitaires_texte import normaliser_texte, extraire_valeur_et_reste
 
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -74,10 +72,6 @@ def construire_entetes(grille: GrilleTableau) -> tuple[List[str], int]:
         # dédoublonne tout en conservant l'ordre d'apparition
         morceaux_uniques = dict.fromkeys(morceaux_texte)
         entetes[indice_colonne] = " – ".join(morceaux_uniques)
-
-    logger.debug(
-        "En-têtes (%d ligne(s) fusionnée(s)) : %s", nombre_lignes_entete, entetes
-    )
 
     return entetes, nombre_lignes_entete
 
@@ -211,16 +205,9 @@ def analyser_tableau_sondage(tableau_html: Tag) -> List[Sondage]:
             nom_final = fusionner_nom_candidat(nom_colonne, nom_residuel)
             resultat[nom_final] = valeur
 
-            if nom_residuel:
-                logger.debug(
-                    "  colonne %r -> nom trouvé dans la cellule : %r => clé finale %r",
-                    nom_colonne, nom_residuel, nom_final,
-                )
-
         if not resultat:
             continue
 
         sondages.append(Sondage(institut=institut, date=date, resultat=resultat))
 
-    logger.debug("-> %d ligne(s) de résultats extraite(s) sur ce tableau.", len(sondages))
     return sondages
