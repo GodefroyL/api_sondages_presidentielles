@@ -1,10 +1,21 @@
+from fastapi import FastAPI
+
 from sources import lecture_page_sondage
 
-def main():
-    return lecture_page_sondage.main()
-    
+app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"message": "Bienvenue sur l'API des sondages du premier tour de l'élection présidentielle."}
+
+@app.get("/sondages")
+def get_sondages():
+    """
+    Endpoint pour récupérer les sondages du premier tour de l'élection présidentielle.
+    """
+    sondages = lecture_page_sondage.recuperer_sondages_premier_tour()
+    return sondages
 
 if __name__ == "__main__":
-    sondages = main()
+    sondages = get_sondages()
     print(sondages)
