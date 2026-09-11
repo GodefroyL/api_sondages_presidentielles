@@ -11,17 +11,15 @@ dictionnaire de la forme :
     ...
 }
 
-Chaque hypothèse d'un même sondage (plusieurs configurations de candidats
-testées) devient une entrée séparée du dictionnaire, avec le même institut
-et la même date.
+Chaque hypothèse d'un même sondage (plusieurs configurations de candidats testées) devient une entrée séparée du dictionnaire, avec le même institut et la même date.
 
 Dépendances :
     pip install requests beautifulsoup4
 
 Usage :
-    python main.py                # affiche le résultat en JSON sur la sortie standard
-    python main.py --debug        # affiche en plus le détail du parsing (sur stderr)
-    python main.py --sortie resultat.json   # enregistre le résultat dans un fichier
+    python main.py => affiche le résultat en JSON sur la sortie standard
+    python main.py --debug => affiche en plus le détail du parsing (sur stderr)
+    python main.py --sortie resultat.json => enregistre le résultat dans un fichier
 """
 
 import requests
@@ -30,6 +28,7 @@ from bs4 import BeautifulSoup
 from .config import DELAI_MAXIMUM_REQUETE, EN_TETE_HTTP, TITRE_SECTION, URL_PAGE_WIKIPEDIA
 from .analyse_sondages import Sondage, analyser_tableau_sondage
 from .section_wikipedia import trouver_tableaux_section
+from .candidats import Candidats
 
 
 
@@ -46,20 +45,31 @@ def recuperer_sondages_premier_tour(
     titre_section: str = TITRE_SECTION,
 ) -> dict[int, dict]:
     """
-    Fonction principale : télécharge la page, repère les tableaux de la
-    section demandée, les analyse, puis retourne le dictionnaire final
-    numéroté à partir de 1.
+    Fonction principale : télécharge la page, repère les tableaux de la section demandée, les analyse, puis retourne le dictionnaire final numéroté à partir de 1.
     """
-    soupe = recuperer_page_html(url+annee)
-    tableaux = trouver_tableaux_section(soupe, titre_section)
+    contenu_page = recuperer_page_html(url+annee)
+    tableaux = trouver_tableaux_section(contenu_page, titre_section)
 
-    tous_les_sondages: list[Sondage] = []
-    for indice_tableau, tableau in enumerate(tableaux, start=1):
-        tous_les_sondages.extend(analyser_tableau_sondage(tableau))
+# Initialisation des sorties
+    liste_sondages: list[Sondage] = []
+    liste_instituts: set[str] = set()
+    candidats = Candidats()
+
+
+    for _, tableau in enumerate(tableaux, start=1):
+        analyse_tableau_sondage = analyser_tableau_sondage(tableau, candidats)
+        liste_sondages.extend(analyse_tableau_sondage.get('sondages'))
+        for institut in analyse_tableau_sondage.get("instituts",[]): liste_instituts.add(institut)
+        candidats = analyse_tableau_sondage.get("candidats")
+
+    sondages =  {indice+1: sondage.vers_dictionnaire() for indice, sondage in enumerate(liste_sondages)}
 
     return {
-        indice: sondage.vers_dictionnaire()
-        for indice, sondage in enumerate(tous_les_sondages, start=1)
+        "annee": annee,
+        "tour": 1,
+        "liste candidats": candidats.liste_candidats,
+        "liste_instituts": list(liste_instituts),
+        "sondages": sondages,
     }
 
 
@@ -67,7 +77,8 @@ def main(annee: str = "2027") -> dict[int|str, dict|str]:
     try:
         return recuperer_sondages_premier_tour(annee)
     except Exception as erreur:
-        return {"Erreur": f"Échec de la récupération des sondages :  {erreur}"}
+        message_erreur = f"{erreur.__traceback__.tb_lineno} , {erreur.__traceback__.tb_frame}"
+        return {"Erreur": f"Échec de la récupération des sondages :  {message_erreur} : {erreur}"}
 
 
 if __name__ == "__main__":

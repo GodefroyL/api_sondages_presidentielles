@@ -108,6 +108,29 @@ def deplier_tableau(tableau: Tag) -> GrilleTableau:
 
 def ligne_est_uniquement_entete(ligne: LigneGrille) -> bool:
     """Retourne True si toutes les cellules de la ligne sont des <th>."""
-    return bool(ligne) and all(
-        isinstance(cellule, Tag) and cellule.name == "th" for cellule in ligne
-    )
+    type_ligne = [element.name for element in ligne]
+    return all([element == 'th' for element in type_ligne])
+
+
+def lecture_tableau(tableau: GrilleTableau) -> List[List[str]]:
+    """
+    Transforme une grille de cellules (BeautifulSoup) en tableau (liste de liste) de chaine de caractère. Les entêtes et les lignes de sondages sont séparés.
+    ### Paramètrse d'entrée:
+    - tableau : GrilleTableau : une grille de cellules (BeautifulSoup) issue de la fonction deplier_tableau
+    ### Paramètres de sortie:
+    - dictionnaire avec deux clés :
+        - "entete" : entêtes du tableau
+        - "sondages" : lignes de sondages du tableau
+    """
+# Initialisation des sorties
+    tableau_formatte = list()
+    entete = list()
+# Parcours du tableau pour en extraire uniquement le texte
+    for ligne in tableau:
+        ligne_texte = [nettoyer_texte(element.get_text()) for element in ligne]
+        if '' in ligne_texte: continue
+        elif ligne_est_uniquement_entete(ligne): entete.append(ligne_texte)
+        elif ligne_texte[0] != ligne_texte[1]: tableau_formatte.append(ligne_texte)
+    if len(entete)==1: entete=entete[0]
+
+    return {"entete": entete, "sondages": tableau_formatte}

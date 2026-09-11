@@ -6,12 +6,14 @@ production des objets Sondage.
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+import re
 
 from bs4 import Tag
 
 from .config import ENTETES_NON_CANDIDATS, MOTS_RESIDUELS_IGNORES
-from .tableau_html import GrilleTableau, deplier_tableau, texte_cellule, ligne_est_uniquement_entete
+from .tableau_html import GrilleTableau, deplier_tableau, texte_cellule, ligne_est_uniquement_entete, lecture_tableau
 from .utilitaires_texte import normaliser_texte, extraire_valeur_et_reste
+from .candidats import Candidats
 
 
 
@@ -21,6 +23,7 @@ class Sondage:
 
     institut: str
     date: str
+    liste_candidats: list[str]
     resultat: Dict[str, float] = field(default_factory=dict)
 
     def vers_dictionnaire(self) -> dict:
@@ -28,6 +31,7 @@ class Sondage:
         return {
             "institut": self.institut,
             "date": self.date,
+            "candidats": self.liste_candidats,
             "resultat": self.resultat,
         }
 
@@ -134,80 +138,114 @@ def fusionner_nom_candidat(nom_colonne: str, nom_residuel: Optional[str]) -> str
     return f"{nom_colonne} ({nom_residuel})"
 
 
-def identifier_colonnes_meta(entetes_normalises: List[str]) -> tuple[Optional[int], Optional[int], Optional[int]]:
+def identifier_colonnes_meta(entetes: List[str]) -> tuple[Optional[int], Optional[int], Optional[int]]:
     """Repère les indices des colonnes "Institut", "Date" et "Échantillon"."""
 
     def trouver_colonne(*mots_cles: str) -> Optional[int]:
-        for indice, entete in enumerate(entetes_normalises):
-            if any(mot_cle in entete for mot_cle in mots_cles):
+        for indice, entete in enumerate(entetes):
+            if any(mot_cle in entete.lower() for mot_cle in mots_cles):
                 return indice
         return None
 
     colonne_institut = trouver_colonne("sondeur", "institut")
     colonne_date = trouver_colonne("date")
-    colonne_echantillon = trouver_colonne("echantillon")
+    colonne_echantillon = trouver_colonne("echantillon", "échantillon")
     return colonne_institut, colonne_date, colonne_echantillon
 
 
-def analyser_tableau_sondage(tableau_html: Tag) -> List[Sondage]:
+def analyser_sondage(sondage: list[str], indice_meta: list[dict[str,float|str]], nom_candidats: dict[int,str], candidats: Candidats):
+    """Fonction pour récupérer les résultats d'un sondage
+    ### Paramètres d'entrée:
+    - sondage: liste issue du tableau de la fonction lecture tableau contenant le sondage
+    - indice_meta: indices des colonnes qui ne sont pas les résultats (institut...)
+    - nom_candidats: ldictionnaire avec les indices liés aux noms des candidats pour savoir quel score est pour quel candidat
+    - candidats: objet de la classe Candidats pour gérer la liste des candidats
+    ### Sortie:
+    - resultat_sondage: liste des dictionnaires contenant la clef 'valeur' avec le résultat et la clef 'nom' avec le nom du candidat
+    - candidats"""
+    resultat_sondage = []
+    for indice, element in enumerate(sondage):
+        if indice in indice_meta: continue
+        try: resultat_sondage+=([{'nom': nom_candidats[indice].strip(), 'valeur':float(element.replace(',','.').replace('<','').replace('>',''))}])
+        except ValueError:
+            element_analyse = separer_nombre_texte(element)
+            for e in element_analyse:
+                candidats.ajouter_candidats([e[0]])
+                resultat_sondage+=([{'nom':candidats.dictionnaire_candidats.get(e[0]), 'valeur':e[1]}])
+    return resultat_sondage, candidats
+
+
+def separer_nombre_texte(cellule) -> list[list[float|str]]:
+    """Fonction pour séparer les valeurs des noms quand ces derniers sont dans la case des valeurs
+    ### Paramètres d'entrée:
+    - cellule: cellule contenant du texte à analyser
+    ### Sortie:
+    - resultat: Liste des paires valeur nom du candidat dans la cellule [[nom, valeur],...]"""
+    # Trouve toutes les paires (nombre, texte)
+    paires = re.findall(r'(\d+\.?\d*)([A-Za-zÀ-ÖØ-öø-ÿ ]+)', cellule)
+    resultat = []
+# Pour chaque paire, on ajoute la valeur converti en float et le nom du candidat dans la liste résultat qui sera renvoyée
+    for valeur, nom in paires: resultat.append([nom.strip(), float(valeur)])
+    return resultat
+
+
+def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats) -> dict[str,List[Sondage]|list[str]]:
     """
     Analyse un tableau HTML de sondages (déjà repéré comme "wikitable") et retourne la liste des Sondage qu'il contient (une entrée par ligne, donc une entrée par hypothèse lorsqu'un sondage en teste plusieurs).
+    ### Paramètres d'entrée:
+    - tableau_html: tableau récupéré de la page wikipédia
+    ### Sortie:
+    - dictionnaire avec les clefs suivantes:
+        - sondages: list[Sondage] liste de tous les sondages du tableau dans la classe Sondage
+        - instutus: list[str] liste des instituts
+        - candidats: list[str] liste des candidats
     """
-    grille = deplier_tableau(tableau_html)
-    if not grille:
-        return []
+    tableau_deplie = deplier_tableau(tableau_html)
 
-    entetes, nombre_lignes_entete = construire_entetes(grille)
-    entetes_normalises = [normaliser_texte(entete) for entete in entetes]
+# Lecture du tableau déplié pour obtenir les entêtes et les sondages
+    dictionnaire_tableau = lecture_tableau(tableau_deplie)
 
-    colonne_institut, colonne_date, colonne_echantillon = identifier_colonnes_meta(entetes_normalises)
+# Récupération des indices des colonnes "Institut", "Date" et "Échantillon"
+    colonne_institut, colonne_date, colonne_echantillon = identifier_colonnes_meta(dictionnaire_tableau.get("entete",[]))
+    indice_meta = [colonne_institut, colonne_date, colonne_echantillon]
 
+# Récupération des indices des candidats
     colonnes_candidats: List[int] = []
-    for indice, entete_normalise in enumerate(entetes_normalises):
+    # Dictionnaire des candidats avec comme clef, l'indice auquel ils sont dans le tableau sondages du dictionnaire
+    noms_candidats_par_colonne = {}
+    for indice, element in enumerate(dictionnaire_tableau.get("entete", [])):
         if indice in (colonne_institut, colonne_date, colonne_echantillon):
             continue
-        if entete_normalise in ENTETES_NON_CANDIDATS or entete_normalise == "":
+        if element in ENTETES_NON_CANDIDATS or element == "":
             continue
         colonnes_candidats.append(indice)
+        noms_candidats_par_colonne[indice] = element
 
-    noms_candidats_par_colonne = {indice: entetes[indice] for indice in colonnes_candidats}
 
-    sondages: List[Sondage] = []
+    liste_candidats = [noms_candidats_par_colonne[indice] for indice in noms_candidats_par_colonne.keys()]
+    candidats.ajouter_candidats(liste_candidats=liste_candidats)
 
-    for ligne in grille[nombre_lignes_entete:]:
-        if not ligne or ligne_est_uniquement_entete(ligne):
-            continue
+    sondages: list[Sondage] = []
+    liste_instituts: set[str] = set()
 
-        institut = (
-            texte_cellule(ligne[colonne_institut])
-            if colonne_institut is not None and colonne_institut < len(ligne)
-            else ""
-        )
-        date = (
-            texte_cellule(ligne[colonne_date])
-            if colonne_date is not None and colonne_date < len(ligne)
-            else ""
-        )
+    for ligne in dictionnaire_tableau.get("sondages"):
+        if not ligne:continue
 
-        if not institut and not date or institut == date:
-            continue
+    # Récupération date et institut de sondage
+        institut = ligne[colonne_institut] if colonne_institut is not None and colonne_institut < len(ligne) else ""
+        date = ligne[colonne_date] if colonne_date is not None and colonne_date < len(ligne) else ""
+        if institut == date: continue
+    # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
+        if '-' in date: date = date[date.index('-'):][1:]
 
-        resultat: Dict[str, float] = {}
-        for indice_colonne in colonnes_candidats:
-            if indice_colonne >= len(ligne):
-                continue
+    # Analyse du sondage
+        resultat = analyser_sondage(sondage=ligne,indice_meta=indice_meta,nom_candidats=noms_candidats_par_colonne, candidats=candidats)
 
-            nom_residuel, valeur = analyser_cellule_resultat(ligne[indice_colonne])
-            if valeur is None:
-                continue
+        if not resultat: continue
+        candidats_sonde = [element.get('nom') for element in resultat[0]]
 
-            nom_colonne = noms_candidats_par_colonne[indice_colonne]
-            nom_final = fusionner_nom_candidat(nom_colonne, nom_residuel)
-            resultat[nom_final] = valeur
+        sondages.append(Sondage(institut=institut, date=date, liste_candidats=candidats_sonde, resultat=resultat))
 
-        if not resultat:
-            continue
+        liste_instituts.add(institut)
 
-        sondages.append(Sondage(institut=institut, date=date, resultat=resultat))
-
-    return sondages
+    return {"sondages": sondages, "instituts": list(liste_instituts), "candidats": candidats}
