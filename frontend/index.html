@@ -1,14 +1,142 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Sondages présidentielle</title>
-	<link rel="stylesheet" href="style.css">
-	<script src="script.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sondages — Élection présidentielle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-	<header></header>
-	<main></main>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-mark">SP</span>
+      <div>
+        <h1>Sondages présidentielle</h1>
+        <p>Panneau de contrôle</p>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h2>Élection</h2>
+      <p class="field-label">Tour</p>
+      <div class="checkbox-list" id="tour-options">
+        <label class="checkbox-inline">
+          <input type="radio" name="tour" value="premier_tour" checked>
+          <span>1er tour</span>
+        </label>
+        <label class="checkbox-inline">
+          <input type="radio" name="tour" value="second_tour">
+          <span>2nd tour</span>
+        </label>
+      </div>
+
+      <p class="field-label">Élections à superposer</p>
+      <div class="checkbox-list" id="annee-options">
+        <label class="checkbox-inline">
+          <input type="checkbox" class="annee-toggle" value="2027" checked>
+          <span>2027</span>
+        </label>
+        <label class="checkbox-inline">
+          <input type="checkbox" class="annee-toggle" value="2022">
+          <span>2022</span>
+        </label>
+        <label class="checkbox-inline">
+          <input type="checkbox" class="annee-toggle" value="2017">
+          <span>2017</span>
+        </label>
+      </div>
+      <p class="hint-text">Cochez plusieurs années pour superposer les campagnes (axe aligné sur le nombre de jours avant le tour).</p>
+
+      <button id="btn-recharger" class="btn-primary">Forcer le rechargement</button>
+      <p id="load-status" class="status-text"></p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Instituts</h2>
+        <div class="mini-actions">
+          <button data-target="instituts" data-action="all">Tous</button>
+          <button data-target="instituts" data-action="none">Aucun</button>
+        </div>
+      </div>
+      <div id="instituts-list" class="checkbox-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Candidats</h2>
+        <div class="mini-actions">
+          <button data-target="candidats" data-action="all">Tous</button>
+          <button data-target="candidats" data-action="none">Aucun</button>
+        </div>
+      </div>
+      <input type="search" id="candidat-search" placeholder="Rechercher un candidat…" autocomplete="off">
+      <div id="candidats-list" class="checkbox-list checkbox-list-scroll"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Échelle du graphique</h2>
+
+      <p class="field-label">Axe des intentions de vote (%)</p>
+      <div class="field-row field-row-inline">
+        <label class="checkbox-inline">
+          <input type="checkbox" id="y-auto" checked>
+          <span>Automatique</span>
+        </label>
+      </div>
+      <div class="field-row two-col">
+        <div>
+          <label for="y-min">Min</label>
+          <input type="number" id="y-min" value="0" step="1">
+        </div>
+        <div>
+          <label for="y-max">Max</label>
+          <input type="number" id="y-max" value="40" step="1">
+        </div>
+      </div>
+
+      <p class="field-label">Période affichée</p>
+      <div class="field-row two-col">
+        <div>
+          <label for="x-min">Du</label>
+          <select id="x-min"></select>
+        </div>
+        <div>
+          <label for="x-max">Au</label>
+          <select id="x-max"></select>
+        </div>
+      </div>
+    </section>
+  </aside>
+
+  <main class="content">
+    <header class="content-header">
+      <h1 id="page-title">Sondages — premier tour, 2027</h1>
+      <p id="page-subtitle" class="subtitle"></p>
+    </header>
+
+    <div class="chart-card">
+      <canvas id="poll-chart"></canvas>
+      <div id="chart-tooltip" class="chart-tooltip" hidden></div>
+      <div id="chart-empty" class="chart-empty" hidden>
+        Sélectionnez au moins un candidat et un institut dans le panneau de gauche pour afficher une courbe.
+      </div>
+    </div>
+    <div id="chart-legend" class="chart-legend"></div>
+
+    <p class="footnote">Source : api-sondages-presidentielles.fastapicloud.dev — chaque point correspond à une intention de vote publiée. Les hypothèses de candidature varient d'un sondage à l'autre ; une courbe n'affiche que les points où le candidat figurait dans le sondage.</p>
+  </main>
+
+</div>
+
+<script src="data.js"></script>
+<script src="graphique.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
