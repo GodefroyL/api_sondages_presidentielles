@@ -23,6 +23,8 @@ def get_sondages_second_tour(annee: str):
     """
     return {"message": f"Récupération des sondages du second tour n'est pas encore implémentée."}
 
+app.frontend("/accueil", directory="frontend")
+
 if __name__ == "__main__":
     sondages = get_sondages_premer_tour("2027")
     print(sondages)
