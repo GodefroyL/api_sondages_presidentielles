@@ -10,10 +10,9 @@ class Candidats:
 
     def maj_liste_candidats(self) -> list[str]:
         """Fonction pour mettre à jour la liste des candidats"""
-        liste_candidats = set()
         for clef in self.dictionnaire_candidats.keys():
-            liste_candidats.add(self.dictionnaire_candidats.get(clef))
-        self.liste_candidats = list(liste_candidats)
+            if self.dictionnaire_candidats.get(clef) not in self.liste_candidats:
+                self.liste_candidats.append(self.dictionnaire_candidats.get(clef))
         self.base_liste_candidats = {self.base_nom(nom): nom for nom in self.liste_candidats}
 
 
