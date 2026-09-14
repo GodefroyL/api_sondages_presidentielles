@@ -12,7 +12,7 @@ from bs4 import Tag
 
 from .config import ENTETES_NON_CANDIDATS, MOTS_RESIDUELS_IGNORES
 from .tableau_html import GrilleTableau, deplier_tableau, texte_cellule, ligne_est_uniquement_entete, lecture_tableau
-from .utilitaires_texte import normaliser_texte, extraire_valeur_et_reste
+from .utilitaires_texte import normaliser_texte, extraire_valeur_et_reste, formaliser_date
 from .candidats import Candidats
 
 
@@ -189,7 +189,7 @@ def separer_nombre_texte(cellule) -> list[list[float|str]]:
     return resultat
 
 
-def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats) -> dict[str,List[Sondage]|list[str]]:
+def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str) -> dict[str,List[Sondage]|list[str]]:
     """
     Analyse un tableau HTML de sondages (déjà repéré comme "wikitable") et retourne la liste des Sondage qu'il contient (une entrée par ligne, donc une entrée par hypothèse lorsqu'un sondage en teste plusieurs).
     ### Paramètres d'entrée:
@@ -200,52 +200,57 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats) -> dict[st
         - instutus: list[str] liste des instituts
         - candidats: list[str] liste des candidats
     """
-    tableau_deplie = deplier_tableau(tableau_html)
+    try:
+        tableau_deplie = deplier_tableau(tableau_html)
 
-# Lecture du tableau déplié pour obtenir les entêtes et les sondages
-    dictionnaire_tableau = lecture_tableau(tableau_deplie)
+    # Lecture du tableau déplié pour obtenir les entêtes et les sondages
+        dictionnaire_tableau = lecture_tableau(tableau_deplie)
 
-# Récupération des indices des colonnes "Institut", "Date" et "Échantillon"
-    colonne_institut, colonne_date, colonne_echantillon = identifier_colonnes_meta(dictionnaire_tableau.get("entete",[]))
-    indice_meta = [colonne_institut, colonne_date, colonne_echantillon]
+    # Récupération des indices des colonnes "Institut", "Date" et "Échantillon"
+        colonne_institut, colonne_date, colonne_echantillon = identifier_colonnes_meta(dictionnaire_tableau.get("entete",[]))
+        indice_meta = [colonne_institut, colonne_date, colonne_echantillon]
 
-# Récupération des indices des candidats
-    colonnes_candidats: List[int] = []
-    # Dictionnaire des candidats avec comme clef, l'indice auquel ils sont dans le tableau sondages du dictionnaire
-    noms_candidats_par_colonne = {}
-    for indice, element in enumerate(dictionnaire_tableau.get("entete", [])):
-        if indice in (colonne_institut, colonne_date, colonne_echantillon):
-            continue
-        if element in ENTETES_NON_CANDIDATS or element == "":
-            continue
-        colonnes_candidats.append(indice)
-        noms_candidats_par_colonne[indice] = element
+    # Récupération des indices des candidats
+        colonnes_candidats: List[int] = []
+        # Dictionnaire des candidats avec comme clef, l'indice auquel ils sont dans le tableau sondages du dictionnaire
+        noms_candidats_par_colonne = {}
+        for indice, element in enumerate(dictionnaire_tableau.get("entete", [])):
+            if indice in (colonne_institut, colonne_date, colonne_echantillon):
+                continue
+            if element in ENTETES_NON_CANDIDATS or element == "":
+                continue
+            colonnes_candidats.append(indice)
+            noms_candidats_par_colonne[indice] = element
 
 
-    liste_candidats = [noms_candidats_par_colonne[indice] for indice in noms_candidats_par_colonne.keys()]
-    candidats.ajouter_candidats(liste_candidats=liste_candidats)
+        liste_candidats = [noms_candidats_par_colonne[indice] for indice in noms_candidats_par_colonne.keys()]
+        candidats.ajouter_candidats(liste_candidats=liste_candidats)
 
-    sondages: list[Sondage] = []
-    liste_instituts: set[str] = set()
+        sondages: list[Sondage] = []
+        liste_instituts: set[str] = set()
 
-    for ligne in dictionnaire_tableau.get("sondages"):
-        if not ligne:continue
+        for ligne in dictionnaire_tableau.get("sondages"):
+            if not ligne:continue
 
-    # Récupération date et institut de sondage
-        institut = ligne[colonne_institut] if colonne_institut is not None and colonne_institut < len(ligne) else ""
-        date = ligne[colonne_date] if colonne_date is not None and colonne_date < len(ligne) else ""
-        if institut == date: continue
-    # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
-        if '-' in date: date = date[date.index('-'):][1:]
+        # Récupération date et institut de sondage
+            institut = ligne[colonne_institut] if colonne_institut is not None and colonne_institut < len(ligne) else ""
+            date = ligne[colonne_date] if colonne_date is not None and colonne_date < len(ligne) else ""
+            if institut == date: continue
+        # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
+            date = formaliser_date(f'{date} {annee}')
 
-    # Analyse du sondage
-        resultat = analyser_sondage(sondage=ligne,indice_meta=indice_meta,nom_candidats=noms_candidats_par_colonne, candidats=candidats)
+        # Analyse du sondage
+            resultat = analyser_sondage(sondage=ligne,indice_meta=indice_meta,nom_candidats=noms_candidats_par_colonne, candidats=candidats)
 
-        if not resultat: continue
-        candidats_sonde = [element.get('nom') for element in resultat[0]]
+            if not resultat: continue
+            candidats_sonde = [element.get('nom') for element in resultat[0]]
 
-        sondages.append(Sondage(institut=institut, date=date, liste_candidats=candidats_sonde, resultat=resultat))
+            sondages.append(Sondage(institut=institut, date=date, liste_candidats=candidats_sonde, resultat=resultat))
 
-        liste_instituts.add(institut)
+            liste_instituts.add(institut)
 
-    return {"sondages": sondages, "instituts": list(liste_instituts), "candidats": candidats}
+        return {"sondages": sondages, "instituts": list(liste_instituts), "candidats": candidats}
+    except Exception as e:
+        nom_fichier = e.__traceback__.tb_frame.f_code.co_filename.replace('c:\\Users\\godef\\Documents\\projets_python\\api_sondages_presidentielles\\sources\\','')
+        raise ValueError(f'Erreur à la ligne {e.__traceback__.tb_lineno} du fichier {nom_fichier} :\n {str(e)}\n')
+

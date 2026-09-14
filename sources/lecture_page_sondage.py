@@ -55,12 +55,14 @@ def recuperer_sondages_premier_tour(
     liste_instituts: set[str] = set()
     candidats = Candidats()
 
-
+    date = annee
     for _, tableau in enumerate(tableaux, start=1):
-        analyse_tableau_sondage = analyser_tableau_sondage(tableau, candidats)
-        liste_sondages.extend(analyse_tableau_sondage.get('sondages'))
-        for institut in analyse_tableau_sondage.get("instituts",[]): liste_instituts.add(institut)
-        candidats = analyse_tableau_sondage.get("candidats")
+        if len(tableau) == 4: date = tableau
+        else:
+            analyse_tableau_sondage = analyser_tableau_sondage(tableau, candidats, date)
+            liste_sondages.extend(analyse_tableau_sondage.get('sondages'))
+            for institut in analyse_tableau_sondage.get("instituts",[]): liste_instituts.add(institut)
+            candidats = analyse_tableau_sondage.get("candidats")
 
     sondages =  {indice+1: sondage.vers_dictionnaire() for indice, sondage in enumerate(liste_sondages)}
 
@@ -76,9 +78,10 @@ def recuperer_sondages_premier_tour(
 def main(annee: str = "2027") -> dict[int|str, dict|str]:
     try:
         return recuperer_sondages_premier_tour(annee)
-    except Exception as erreur:
-        message_erreur = f"{erreur.__traceback__.tb_lineno} , {erreur.__traceback__.tb_frame}"
-        return {"Erreur": f"Échec de la récupération des sondages :  {message_erreur} : {erreur}"}
+    except Exception as e:
+        nom_fichier = e.__traceback__.tb_frame.f_code.co_filename.replace('c:\\Users\\godef\\Documents\\projets_python\\api_sondages_presidentielles\\sources\\','')
+        message_erreur = f'Échec de la récupération des sondages, erreur à la ligne {e.__traceback__.tb_lineno} du fichier {nom_fichier} :\n{str(e)}\n'
+        return message_erreur
 
 
 if __name__ == "__main__":

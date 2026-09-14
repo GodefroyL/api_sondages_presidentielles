@@ -11,6 +11,25 @@ from typing import Optional
 MOTIF_NOMBRE = re.compile(r"-?\d+[.,]?\d*")
 
 
+def formaliser_date(date: str)->str:
+    """
+    Fonction pour formalier la date de la manière suivante:
+    - 3 septembre 2026 => 03/09/2026
+    """
+    try:
+        nombre_mois = {'janvier': '01', 'fevrier': '02', 'mars': '03', 'avril': '04', 'mai': '05', 'juin': '06', 'juillet': '07', 'aout': '08', 'septembre': '09', 'octobre': '10', 'novembre': '11', 'decembre': '12'}
+        if '-' in date: date_formalisee = date[date.index('-'):][1:]
+        else: date_formalisee = date
+        date_formalisee = date_formalisee.replace('é','e').replace('û','u').lower().split(' ')
+        if '' in date_formalisee: date_formalisee.remove('')
+        date_formalisee[1] = nombre_mois.get(date_formalisee[1])
+        date_formalisee = '/'.join(date_formalisee)
+        if len(date_formalisee)==9: date_formalisee = '0'+date_formalisee
+        return date_formalisee
+    except Exception as e:
+        raise ValueError(f'Erreur dans la fonction `formaliser_date` du fichier `utilitaire_texte.py`, à la ligne {e.__traceback__.tb_lineno} :\n {str(e)}\nParamètre :{date}\n')
+
+
 def nettoyer_texte(texte: Optional[str]) -> str:
     """
     Nettoie un texte brut extrait de Wikipédia :

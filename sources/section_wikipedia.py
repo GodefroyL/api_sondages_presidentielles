@@ -32,7 +32,7 @@ def trouver_titre_section(soupe: BeautifulSoup, titre_section: str) -> Tag:
     raise RuntimeError(f"Impossible de trouver la section « {titre_section} » sur la page.")
 
 
-def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> List[Tag]:
+def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> List[Tag|str]:
     """
     Retourne la liste des tableaux `<table class="wikitable">` situés dans
     la section `titre_section`, y compris dans ses éventuelles
@@ -42,9 +42,12 @@ def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> List[T
     titre_section_html = trouver_titre_section(soupe, titre_section)
     niveau_section = int(titre_section_html.name[1])
 
-    tableaux: List[Tag] = []
+    tableaux: List[Tag|str] = []
     for element_suivant in titre_section_html.find_all_next():
         if element_suivant is titre_section_html:
+            continue
+        if type(element_suivant.get('id'))==str and 'Année_' in element_suivant.get('id'):
+            tableaux.append(element_suivant.get('id').strip().replace('Année_',''))
             continue
 
         if element_suivant.name in NIVEAUX_TITRES:
