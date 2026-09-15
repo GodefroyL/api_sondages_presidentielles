@@ -5,7 +5,7 @@ function charger_donnees() {
 
 function main() {
     donnees = charger_donnees();
-    const div = document.getElementById("test");
+    const div = document.getElementById("parametres");
     div.innerHTML = donnees;
 }
 
