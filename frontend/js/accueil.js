@@ -230,6 +230,7 @@ function mettre_a_jour() {
 // ---------------------------------------------------------------------------
 
 async function initialiser_accueil() {
+    console.log("initialisation de l'accueil")
     await charger_toutes_les_annees();
     initialiser_selection_par_defaut();
     afficher_instituts();
