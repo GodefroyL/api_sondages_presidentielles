@@ -1,0 +1,136 @@
+/* Style des composants de base l'accueil*/
+body {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  background-color: beige;
+}
+
+.titre {
+  display: flex;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: bold;
+  color: cornflowerblue;
+  -webkit-text-stroke: 0.3px black;
+  min-width: 400px;
+  width: 70%;
+  height: 40px;
+  background-image: url('../images/drapeau.jpeg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+main {
+  display: flex;
+  flex-direction: row;
+  min-width: 400px;
+  width: 70%;
+  height: 1000px;
+  background-image: url('../images/image_arriere_plan.jpg');
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+
+/* ============================================================
+   css pour le graphique
+   Styles pour le graphique multi-courbes tracé par graphique.js
+   ============================================================ */
+
+.zone_graphique {
+  display: flex;
+  position: relative;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
+
+/* Colonne fixe de l'axe Y : ne défile jamais */
+.axe_fixe {
+  flex: 0 0 auto;
+  border-right: 1px solid #eee;
+  z-index: 2;
+}
+
+/* Zone scrollable : grille + courbes + axe X */
+.graphique {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  cursor: grab;
+}
+.graphique:active {
+  cursor: grabbing;
+}
+
+/* Info-bulle affichée au survol des points */
+.survol_points {
+  position: fixed;
+  background: #222;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: system-ui, sans-serif;
+  pointer-events: none;
+  display: none;
+  z-index: 10;
+}
+.survol_points.visible {
+  display: block;
+}
+
+/* Éléments internes du SVG */
+.trait_axe {
+  stroke: #999;
+  stroke-width: 1;
+}
+.grille {
+  stroke: #eee;
+  stroke-width: 1;
+}
+.etiquette_axe {
+  font-size: 11px;
+  fill: #666;
+  font-family: system-ui, sans-serif;
+}
+.courbe {
+  fill: none;
+  stroke-width: 1.5;
+}
+.point_survol {
+  cursor: pointer;
+}
+.point_survol:hover {
+  stroke: #000;
+  stroke-width: 1;
+}
+
+/* Légende des courbes */
+.legende_graphique {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  font-family: system-ui, sans-serif;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.item_legende {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pastille_legende {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
