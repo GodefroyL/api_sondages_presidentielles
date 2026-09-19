@@ -16,7 +16,7 @@ body {
   min-width: 400px;
   width: 70%;
   height: 40px;
-  background-image: url('./static//images/drapeau.jpeg');
+  background-image: url('./static/images/drapeau.jpeg');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
