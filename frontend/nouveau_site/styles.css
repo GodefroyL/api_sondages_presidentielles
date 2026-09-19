@@ -16,7 +16,7 @@ body {
   min-width: 400px;
   width: 70%;
   height: 40px;
-  background-image: url('../frontend/images/drapeau.jpeg');
+  background-image: url('./images/drapeau.jpeg');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
@@ -28,7 +28,7 @@ main {
   min-width: 400px;
   width: 70%;
   height: 1000px;
-  background-image: url('../frontend/images/image_arriere_plan.jpg');
+  background-image: url('./images/image_arriere_plan.jpg');
   background-repeat: no-repeat;
   background-size: contain;
 }

@@ -23,8 +23,8 @@ const TOUR = 1;
 // Les noms absents des données sont simplement ignorés.
 const CANDIDATS_PAR_DEFAUT = {
     2027: ["Le Pen(RN)", "Mélenchon(LFI)", "Philippe(HOR)", "Glucksmann(PP)", "Attal(RE)", "Retailleau(LR)"],
-    2022: ["Macron", "Le Pen", "Mélenchon", "Zemmour", "Pécresse"],
-    2017: ["Macron", "Le Pen", "Fillon", "Mélenchon"],
+    2022: [],
+    2017: [],
 };
 
 // ---------------------------------------------------------------------------
