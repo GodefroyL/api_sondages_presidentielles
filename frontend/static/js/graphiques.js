@@ -39,6 +39,7 @@ const DIMENSIONS_BASE = {
 
 // ---- Fonction principale : orchestre l'ensemble du tracé ----
 export function tracerGraphique(listeDeCourbes, listeDeLegendes) {
+  console.log(listeDeCourbes, listeDeLegendes)
   const elements = recupererElementsHtml();
   const couleurs = genererCouleurs(listeDeLegendes.length);
   const courbesNormalisees = normaliserCourbes(listeDeCourbes);
@@ -52,7 +53,7 @@ export function tracerGraphique(listeDeCourbes, listeDeLegendes) {
     elements.graphique, courbesNormalisees, listeDeLegendes, couleurs, echelles, dimensions, positionX, positionY
   );
 
-  dessinerLegende(elements.zoneGraphique, listeDeLegendes, couleurs);
+  dessinerLegende(elements.legendeGraphique, listeDeLegendes, couleurs);
   activerInfoBulle(svgPrincipal, elements.zoneSurvol);
   activerDefilementParGlissement(elements.graphique);
 }
@@ -61,6 +62,7 @@ export function tracerGraphique(listeDeCourbes, listeDeLegendes) {
 function recupererElementsHtml() {
   return {
     zoneGraphique: document.getElementById('zone_graphique'),
+    legendeGraphique: document.getElementById('legende_graphique'),
     axeFixe: document.getElementById('axe_fixe'),
     graphique: document.getElementById('graphique'),
     zoneSurvol: document.getElementById('survol_points')
@@ -78,6 +80,7 @@ function genererCouleurs(nombreCourbes) {
 
 // ---- Conversion des dates + tri chronologique de chaque courbe ----
 function normaliserCourbes(listeDeCourbes) {
+  console.log(listeDeCourbes)
   return listeDeCourbes.map(courbe =>
     courbe
       .map(([date, valeur]) => ({ date: date instanceof Date ? date : new Date(date), valeur }))
@@ -244,15 +247,8 @@ function dessinerPointsSurvolables(courbesNormalisees, listeDeLegendes, couleurs
 }
 
 // ---- Construction (ou mise à jour) de la légende des courbes ----
-function dessinerLegende(zoneGraphique, listeDeLegendes, couleurs) {
-  let legende = document.getElementById('legende_graphique');
-  if (!legende) {
-    legende = document.createElement('div');
-    legende.id = 'legende_graphique';
-    zoneGraphique.appendChild(legende);
-  }
-
-  legende.innerHTML = listeDeLegendes
+function dessinerLegende(legendeGraphique, listeDeLegendes, couleurs) {
+  legendeGraphique.innerHTML = listeDeLegendes
     .map((nom, indice) => `
       <span class="item_legende">
         <span class="pastille_legende" style="background:${couleurs[indice]};"></span>

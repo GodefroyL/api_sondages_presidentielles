@@ -15,8 +15,8 @@ body {
   -webkit-text-stroke: 0.3px black;
   min-width: 400px;
   width: 70%;
-  height: 40px;
-  background-image: url('./static/images/drapeau.jpeg');
+  padding: 10px 0;
+  background-image: url('images/drapeau.jpeg');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
@@ -28,11 +28,27 @@ main {
   min-width: 400px;
   width: 70%;
   height: 1000px;
-  background-image: url('./static/images/image_arriere_plan.jpg');
+  background-image: url('images/image_arriere_plan.jpg');
   background-repeat: no-repeat;
   background-size: contain;
+  background-color: midnightblue;
 }
 
+.conteneur {
+  border-radius: 15px;
+  background-color: rgba(200, 200, 200, 0.5);
+  margin: 10px;
+  padding: 10px;
+  height: auto;
+}
+
+.conteneur--gauche {
+  width: 70%;
+}
+
+.conteneur--droit {
+  width: 30%;
+}
 
 /* ============================================================
    css pour le graphique
@@ -42,7 +58,8 @@ main {
 .zone_graphique {
   display: flex;
   position: relative;
-  background: #fff;
+  background-color: rgba(200, 200, 200, 0.7);
+  width: 100%;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -54,6 +71,7 @@ main {
   flex: 0 0 auto;
   border-right: 1px solid #eee;
   z-index: 2;
+  margin-right: 10px;
 }
 
 /* Zone scrollable : grille + courbes + axe X */
@@ -112,14 +130,11 @@ main {
 
 /* Légende des courbes */
 .legende_graphique {
-  position: absolute;
-  top: 8px;
-  right: 16px;
   display: flex;
   gap: 12px;
   font-size: 12px;
   font-family: system-ui, sans-serif;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.8);
   padding: 4px 8px;
   border-radius: 4px;
 }

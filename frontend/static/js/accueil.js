@@ -12,19 +12,17 @@
 // Configuration et import des fonctions externes
 // ---------------------------------------------------------------------------
 
-import { charger_donnees } from "./gestion_api";
-import { preparation_courbes } from "./gestion_donnees";
-import { tracerGraphique } from "./graphiques"
+import { charger_donnees } from "./gestion_api.js";
+import { preparation_courbes } from "./gestion_donnees.js";
+import { tracerGraphique } from "./graphiques.js"
 
-const ANNEES = [2027, 2022, 2017];
-const TOUR = 1;
+const ANNEES = [2027, 2022];
+const TOUR = 'premier_tour/';
 
 // Candidats cochés par défaut, par année.
 // Les noms absents des données sont simplement ignorés.
 const CANDIDATS_PAR_DEFAUT = {
     2027: ["Le Pen(RN)", "Mélenchon(LFI)", "Philippe(HOR)", "Glucksmann(PP)", "Attal(RE)", "Retailleau(LR)"],
-    2022: [],
-    2017: [],
 };
 
 // ---------------------------------------------------------------------------
@@ -46,7 +44,8 @@ const etat = {
 async function charger_annee(annee) {
     try {
         // Promise.resolve : fonctionne que charger_donnees soit synchrone ou asynchrone
-        const donnees = await Promise.resolve(charger_donnees(annee, TOUR));
+        let url = TOUR+annee
+        const donnees = await Promise.resolve(charger_donnees(url));
         return donnees;
     } catch (erreur) {
         console.error(`Impossible de charger les données ${annee} :`, erreur);
@@ -221,8 +220,10 @@ function mettre_a_jour() {
     const candidats = lister_candidats_coches();
     const instituts = etat.instituts.filter(i => etat.instituts_coches.has(i));
 
-    const retour = preparation_courbes(candidats, instituts, etat.sondages);
-    tracerGraphique(retour);
+    const info_graphique = preparation_courbes(candidats, instituts, etat.sondages);
+    console.log('courbes', info_graphique[0])
+    console.log('legendes', info_graphique[1])
+    tracerGraphique(info_graphique[0], info_graphique[1]);
 }
 
 // ---------------------------------------------------------------------------
@@ -230,7 +231,6 @@ function mettre_a_jour() {
 // ---------------------------------------------------------------------------
 
 async function initialiser_accueil() {
-    console.log("initialisation de l'accueil")
     await charger_toutes_les_annees();
     initialiser_selection_par_defaut();
     afficher_instituts();
