@@ -25,8 +25,6 @@
 //                     dans le même ordre que listeDeCourbes.
 // ============================================================
 
-const PALETTE_COULEURS = ['#4f46e5', '#e11d48', '#059669', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
-
 const DIMENSIONS_BASE = {
   pixelsParJour: 4,      // largeur horizontale allouée à chaque jour
   largeurAxeY: 50,
@@ -39,10 +37,10 @@ const DIMENSIONS_BASE = {
 
 // ---- Fonction principale : orchestre l'ensemble du tracé ----
 export function tracerGraphique(listeDeCourbes, listeDeLegendes) {
-  console.log(listeDeCourbes, listeDeLegendes)
   const elements = recupererElementsHtml();
   const couleurs = genererCouleurs(listeDeLegendes.length);
   const courbesNormalisees = normaliserCourbes(listeDeCourbes);
+  const courbesMoyennees = courbesNormalisees.map(moyennerPointsParDate);
   const echelles = calculerEchelles(courbesNormalisees);
   const dimensions = calculerDimensions(echelles);
   const positionX = creerFonctionPositionX(echelles, dimensions);
@@ -50,7 +48,7 @@ export function tracerGraphique(listeDeCourbes, listeDeLegendes) {
 
   dessinerAxeY(elements.axeFixe, echelles, dimensions, positionY);
   const svgPrincipal = dessinerGraphiquePrincipal(
-    elements.graphique, courbesNormalisees, listeDeLegendes, couleurs, echelles, dimensions, positionX, positionY
+    elements.graphique, courbesNormalisees, courbesMoyennees, listeDeLegendes, couleurs, echelles, dimensions, positionX, positionY
   );
 
   dessinerLegende(elements.legendeGraphique, listeDeLegendes, couleurs);
@@ -69,23 +67,48 @@ function recupererElementsHtml() {
   };
 }
 
-// ---- Attribution d'une couleur par courbe (palette cyclique) ----
+// ---- Attribution d'une couleur par courbe ----
+// Les teintes sont réparties uniformément sur le cercle chromatique (360°),
+// ce qui garantit des couleurs toujours distinctes quel que soit le nombre
+// de courbes (contrairement à une palette fixe, limitée en nombre de couleurs).
 function genererCouleurs(nombreCourbes) {
   const couleurs = [];
   for (let indice = 0; indice < nombreCourbes; indice++) {
-    couleurs.push(PALETTE_COULEURS[indice % PALETTE_COULEURS.length]);
+    const teinte = Math.round((indice * 360) / nombreCourbes);
+    couleurs.push(`hsl(${teinte}, 70%, 45%)`);
   }
   return couleurs;
 }
 
 // ---- Conversion des dates + tri chronologique de chaque courbe ----
+// Tous les points sont conservés (y compris plusieurs points à la même date) :
+// ils servent ensuite pour l'affichage au survol.
 function normaliserCourbes(listeDeCourbes) {
-  console.log(listeDeCourbes)
   return listeDeCourbes.map(courbe =>
     courbe
       .map(([date, valeur]) => ({ date: date instanceof Date ? date : new Date(date), valeur }))
       .sort((pointA, pointB) => pointA.date - pointB.date)
   );
+}
+
+// ---- Calcul d'une courbe "moyennée" : un seul point par date ----
+// Quand plusieurs points partagent la même date, la ligne tracée doit passer
+// par leur valeur moyenne plutôt que de zigzaguer entre eux.
+function moyennerPointsParDate(courbe) {
+  const groupesParDate = new Map();
+
+  courbe.forEach(point => {
+    const cle = point.date.getTime();
+    if (!groupesParDate.has(cle)) {
+      groupesParDate.set(cle, { date: point.date, valeurs: [] });
+    }
+    groupesParDate.get(cle).valeurs.push(point.valeur);
+  });
+
+  return Array.from(groupesParDate.values()).map(groupe => ({
+    date: groupe.date,
+    valeur: groupe.valeurs.reduce((somme, valeur) => somme + valeur, 0) / groupe.valeurs.length
+  }));
 }
 
 // ---- Calcul des bornes globales (dates et valeurs, toutes courbes confondues) ----
@@ -159,7 +182,7 @@ function construireGraduationsAxeY(echelles, dimensions, positionY) {
 }
 
 // ---- Construction du SVG principal (zone défilante) ----
-function dessinerGraphiquePrincipal(elementGraphique, courbesNormalisees, listeDeLegendes, couleurs, echelles, dimensions, positionX, positionY) {
+function dessinerGraphiquePrincipal(elementGraphique, courbesNormalisees, courbesMoyennees, listeDeLegendes, couleurs, echelles, dimensions, positionX, positionY) {
   const svgPrincipal = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svgPrincipal.setAttribute('id', 'svg_graphique');
   svgPrincipal.setAttribute('width', dimensions.largeurTotale);
@@ -170,7 +193,7 @@ function dessinerGraphiquePrincipal(elementGraphique, courbesNormalisees, listeD
   contenu += dessinerGrilleHorizontale(echelles, dimensions, positionY);
   contenu += dessinerGraduationsMensuellesAxeX(echelles, dimensions, positionX);
   contenu += dessinerLigneAxeX(dimensions);
-  contenu += dessinerCourbes(courbesNormalisees, couleurs, positionX, positionY);
+  contenu += dessinerCourbes(courbesMoyennees, couleurs, positionX, positionY);
   contenu += dessinerPointsSurvolables(courbesNormalisees, listeDeLegendes, couleurs, positionX, positionY);
 
   svgPrincipal.innerHTML = contenu;
@@ -217,24 +240,23 @@ function dessinerLigneAxeX(dimensions) {
   return `<line class="trait_axe" x1="0" y1="${dimensions.hauteur - dimensions.margeBas}" x2="${dimensions.largeurTotale}" y2="${dimensions.hauteur - dimensions.margeBas}" />`;
 }
 
-// ---- Tracé de la ligne (polyline) de chaque courbe ----
-function dessinerCourbes(courbesNormalisees, couleurs, positionX, positionY) {
+// ---- Tracé de la ligne (polyline) de chaque courbe, à partir des points moyennés par date ----
+function dessinerCourbes(courbesMoyennees, couleurs, positionX, positionY) {
   let contenu = '';
-  courbesNormalisees.forEach((courbe, indiceCourbe) => {
+  courbesMoyennees.forEach((courbe, indiceCourbe) => {
     const pointsLigne = courbe.map(point => `${positionX(point.date)},${positionY(point.valeur)}`).join(' ');
     contenu += `<polyline class="courbe" points="${pointsLigne}" stroke="${couleurs[indiceCourbe]}" data-courbe="${indiceCourbe}" />`;
   });
   return contenu;
 }
 
-// ---- Cercles invisibles servant au survol (un point sur cinq, pour ne pas surcharger le DOM) ----
+// ---- Cercles semi-transparents servant au survol (tous les points) ----
 function dessinerPointsSurvolables(courbesNormalisees, listeDeLegendes, couleurs, positionX, positionY) {
   let contenu = '';
   let indiceGlobal = 0;
 
   courbesNormalisees.forEach((courbe, indiceCourbe) => {
-    courbe.forEach((point, indicePoint) => {
-      if (indicePoint % 5 !== 0) return;
+    courbe.forEach((point) => {
       const x = positionX(point.date);
       const y = positionY(point.valeur);
       contenu += `<circle class="point_survol" id="point_${indiceGlobal}" cx="${x}" cy="${y}" r="3" fill="${couleurs[indiceCourbe]}"

@@ -134,8 +134,10 @@ main {
 }
 .point_survol {
   cursor: pointer;
+  opacity: 0.35;
 }
 .point_survol:hover {
+  opacity: 1;
   stroke: #000;
   stroke-width: 1;
 }
