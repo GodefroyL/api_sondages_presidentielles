@@ -185,7 +185,7 @@ def separer_nombre_texte(cellule) -> list[list[float|str]]:
     paires = re.findall(r'(\d+\.?\d*)([A-Za-zÀ-ÖØ-öø-ÿ ]+)', cellule)
     resultat = []
 # Pour chaque paire, on ajoute la valeur converti en float et le nom du candidat dans la liste résultat qui sera renvoyée
-    for valeur, nom in paires: resultat.append([nom.strip(), float(valeur)])
+    for valeur, nom in paires: resultat.append([nom.strip(), float(valeur.replace(',','.').replace('<','').replace('>',''))])
     return resultat
 
 
