@@ -175,17 +175,17 @@ def analyser_sondage(sondage: list[str], indice_meta: list[dict[str,float|str]],
     return resultat_sondage, candidats
 
 
-def separer_nombre_texte(cellule) -> list[list[float|str]]:
+def separer_nombre_texte(cellule: str) -> list[list[float|str]]:
     """Fonction pour séparer les valeurs des noms quand ces derniers sont dans la case des valeurs
     ### Paramètres d'entrée:
     - cellule: cellule contenant du texte à analyser
     ### Sortie:
     - resultat: Liste des paires valeur nom du candidat dans la cellule [[nom, valeur],...]"""
     # Trouve toutes les paires (nombre, texte)
-    paires = re.findall(r'(\d+\.?\d*)([A-Za-zÀ-ÖØ-öø-ÿ ]+)', cellule)
+    paires = re.findall(r'(\d+\.?\d*)([A-Za-zÀ-ÖØ-öø-ÿ ]+)', cellule.replace(',','.').replace('<','').replace('>',''))
     resultat = []
 # Pour chaque paire, on ajoute la valeur converti en float et le nom du candidat dans la liste résultat qui sera renvoyée
-    for valeur, nom in paires: resultat.append([nom.strip(), float(valeur.replace(',','.').replace('<','').replace('>',''))])
+    for valeur, nom in paires: resultat.append([nom.strip(), float(valeur)])
     return resultat
 
 
@@ -238,6 +238,8 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
             if institut == date: continue
         # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
             date = formaliser_date(f'{date} {annee}')
+            if date == '27/03/2026':
+                print("test")
 
         # Analyse du sondage
             resultat = analyser_sondage(sondage=ligne,indice_meta=indice_meta,nom_candidats=noms_candidats_par_colonne, candidats=candidats)
