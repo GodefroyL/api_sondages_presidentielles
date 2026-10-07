@@ -24,7 +24,6 @@ Usage :
 
 import requests
 from bs4 import BeautifulSoup
-import re
 
 from .config import DELAI_MAXIMUM_REQUETE, EN_TETE_HTTP, TITRE_SECTION, URL_PAGE_WIKIPEDIA
 from .analyse_sondages import Sondage, analyser_tableau_sondage

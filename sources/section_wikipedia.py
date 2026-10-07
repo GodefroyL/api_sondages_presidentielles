@@ -4,7 +4,6 @@ et des tableaux de sondages qu'elle contient (y compris ses sous-sections).
 """
 
 from typing import List
-
 from bs4 import BeautifulSoup, Tag
 
 from .utilitaires_texte import normaliser_texte

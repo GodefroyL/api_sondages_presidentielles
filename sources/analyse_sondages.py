@@ -1,13 +1,10 @@
 """
 Analyse métier d'un tableau de sondages déjà "déplié" (cf. tableau_html.py) :
-reconstruction des en-têtes, association nom de candidat / résultat, et
-production des objets Sondage.
+    reconstruction des en-têtes, association nom de candidat / résultat, et production des objets Sondage.
 """
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
-import re
-
 from bs4 import Tag
 
 from .config import ENTETES_NON_CANDIDATS
@@ -52,7 +49,8 @@ def identifier_colonnes_meta(entetes: List[str]) -> tuple[Optional[int], Optiona
 
 
 def analyser_sondage(sondage: list[str], indice_meta: list[dict[str,float|str]], nom_candidats: dict[int,str], candidats: Candidats):
-    """Fonction pour récupérer les résultats d'un sondage
+    """
+    Fonction pour récupérer les résultats d'un sondage
     ### Paramètres d'entrée:
     - sondage: liste issue du tableau de la fonction lecture tableau contenant le sondage
     - indice_meta: indices des colonnes qui ne sont pas les résultats (institut...)
@@ -60,7 +58,8 @@ def analyser_sondage(sondage: list[str], indice_meta: list[dict[str,float|str]],
     - candidats: objet de la classe Candidats pour gérer la liste des candidats
     ### Sortie:
     - resultat_sondage: liste des dictionnaires contenant la clef 'valeur' avec le résultat et la clef 'nom' avec le nom du candidat
-    - candidats"""
+    - candidats
+    """
     resultat_sondage = []
     for indice, element in enumerate(sondage):
         if indice in indice_meta: continue
@@ -96,7 +95,7 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
 
     # Récupération des indices des candidats
         colonnes_candidats: List[int] = []
-        # Dictionnaire des candidats avec comme clef, l'indice auquel ils sont dans le tableau sondages du dictionnaire
+    # Dictionnaire des candidats avec comme clef, l'indice auquel ils sont dans le tableau sondages du dictionnaire
         noms_candidats_par_colonne = {}
         for indice, element in enumerate(dictionnaire_tableau.get("entete", [])):
             if indice in (colonne_institut, colonne_date, colonne_echantillon):
@@ -119,14 +118,18 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
         # Récupération date et institut de sondage
             institut = ligne[colonne_institut] if colonne_institut is not None and colonne_institut < len(ligne) else ""
             date = ligne[colonne_date] if colonne_date is not None and colonne_date < len(ligne) else ""
+
+        # Suppression des lignes remplies par un seul mot (annoncent des candidatures ...)
             if institut == date: continue
+
         # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
             date = formaliser_date(date=date, annee=annee, annee_election=annee_election)
 
         # Analyse du sondage
-            resultat = analyser_sondage(sondage=ligne,indice_meta=indice_meta,nom_candidats=noms_candidats_par_colonne, candidats=candidats)
+            resultat = analyser_sondage(sondage=ligne, indice_meta=indice_meta, nom_candidats=noms_candidats_par_colonne, candidats=candidats)
 
             if not resultat: continue
+
             candidats_sonde = [element.get('nom') for element in resultat[0]]
 
             sondages.append(Sondage(institut=institut, date=date, liste_candidats=candidats_sonde, resultat=resultat))
@@ -134,6 +137,7 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
             liste_instituts.add(institut)
 
         return {"sondages": sondages, "instituts": list(liste_instituts), "candidats": candidats}
+
     except Exception as e:
         nom_fichier = e.__traceback__.tb_frame.f_code.co_filename.replace('c:\\Users\\godef\\Documents\\projets_python\\api_sondages_presidentielles\\sources\\','')
         raise ValueError(f'Erreur à la ligne {e.__traceback__.tb_lineno} du fichier {nom_fichier} :\n {str(e)}\n')

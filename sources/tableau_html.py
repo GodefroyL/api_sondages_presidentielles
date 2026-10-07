@@ -5,7 +5,6 @@ Fonctions bas niveau pour manipuler des tableaux HTML issus de Wikipédia :
 """
 
 from typing import List, Optional
-
 from bs4 import Tag
 
 from .utilitaires_texte import nettoyer_texte

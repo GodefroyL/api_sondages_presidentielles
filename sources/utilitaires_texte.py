@@ -5,10 +5,6 @@ indépendantes de toute logique HTML ou métier.
 
 import re
 import unicodedata
-from typing import Optional
-
-# Motif reconnaissant un nombre décimal (virgule ou point), éventuellement négatif
-MOTIF_NOMBRE = re.compile(r"-?\d+[.,]?\d*")
 
 
 def formaliser_date(date: str, annee: str, annee_election: str)->str:
@@ -69,7 +65,7 @@ def formaliser_valeur(valeur: str) -> float:
     return float(valeur.replace(',','.').replace('<','').replace('>','').replace(' %',''))
 
 
-def nettoyer_texte(texte: Optional[str]) -> str:
+def nettoyer_texte(texte: str|None) -> str:
     """
     Nettoie un texte brut extrait de Wikipédia :
     - remplace les espaces insécables et espaces de largeur nulle,
