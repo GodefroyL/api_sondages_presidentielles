@@ -24,7 +24,7 @@ def get_sondages_second_tour(annee: str):
     """
     return {"message": f"Récupération des sondages du second tour n'est pas encore implémentée."}
 
-app.frontend("/", directory="frontend/nouveau_site")
+app.frontend("/", directory="frontend")
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 
 if __name__ == "__main__":
