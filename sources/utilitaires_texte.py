@@ -44,6 +44,31 @@ def formaliser_date(date: str, annee: str, annee_election: str)->str:
         raise ValueError(f'Erreur dans la fonction `formaliser_date` du fichier `utilitaire_texte.py`, à la ligne {e.__traceback__.tb_lineno} :\n {str(e)}\nParamètre :{date}\n')
 
 
+def separer_nombre_texte(cellule: str) -> list[list[float|str]]:
+    """Fonction pour séparer les valeurs des noms quand ces derniers sont dans la case des valeurs
+    ### Paramètres d'entrée:
+    - cellule: cellule contenant du texte à analyser
+    ### Sortie:
+    - resultat: Liste des paires valeur nom du candidat dans la cellule [[nom, valeur],...]"""
+    # Trouve toutes les paires (nombre, texte)
+    paires = re.findall(r'(\d+\.?\d*)([A-Za-zÀ-ÖØ-öø-ÿ ]+)', cellule.replace(',','.').replace('<','').replace('>',''))
+    resultat = []
+# Pour chaque paire, on ajoute la valeur converti en float et le nom du candidat dans la liste résultat qui sera renvoyée
+    for valeur, nom in paires: resultat.append([nom.strip(), float(valeur)])
+    return resultat
+
+
+def formaliser_valeur(valeur: str) -> float:
+    """
+    Fonction pour formaliser une valeur de sondage en float et supprimer les caractères non numériques
+    ### Paramètres d'entrée:
+     - valeur: valeur à formaliser
+    ### Sortie:
+     - valeur: valeur formalisée en float
+    """
+    return float(valeur.replace(',','.').replace('<','').replace('>','').replace(' %',''))
+
+
 def nettoyer_texte(texte: Optional[str]) -> str:
     """
     Nettoie un texte brut extrait de Wikipédia :
@@ -73,27 +98,3 @@ def normaliser_texte(texte: str) -> str:
     )
     texte_final = re.sub(r"[^a-z0-9 ]", "", texte_sans_accents)
     return texte_final.strip()
-
-
-def extraire_valeur_et_reste(texte: str) -> tuple[Optional[float], str]:
-    """
-    Recherche le premier nombre présent dans `texte` et retourne un tuple
-    (valeur, texte_restant) où :
-    - `valeur` est le nombre trouvé converti en float (None si aucun nombre),
-    - `texte_restant` est le texte une fois ce nombre retiré.
-
-    Exemple : "14,5 (O. Faure)" -> (14.5, "(O. Faure)")
-    """
-    texte_nettoye = nettoyer_texte(texte)
-    correspondance = MOTIF_NOMBRE.search(texte_nettoye)
-
-    if correspondance is None:
-        return None, texte_nettoye
-
-    try:
-        valeur = float(correspondance.group(0).replace(",", "."))
-    except ValueError:
-        return None, texte_nettoye
-
-    texte_restant = texte_nettoye[:correspondance.start()] + texte_nettoye[correspondance.end():]
-    return valeur, texte_restant

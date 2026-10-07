@@ -18,12 +18,6 @@ ENTETES_NON_CANDIDATS = frozenset({
     "echantillon", "commanditaire", "methode", "publie le", "n", "ind", "notes",
 })
 
-# Mots résiduels sans intérêt pouvant apparaître dans une cellule de résultat
-# une fois le nombre retiré (ex: "3 ex" pour un ancien candidat)
-MOTS_RESIDUELS_IGNORES = frozenset({
-    "ex", "nc", "np", "nd", "pts", "points", "voix",
-})
-
 # En-tête HTTP envoyé lors de la requête vers Wikipédia
 EN_TETE_HTTP = {"User-Agent": "Mozilla/5.0 (sondages-scraper/2.0)"}
 

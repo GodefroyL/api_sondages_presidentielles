@@ -10,9 +10,9 @@ import re
 
 from bs4 import Tag
 
-from .config import ENTETES_NON_CANDIDATS, MOTS_RESIDUELS_IGNORES
-from .tableau_html import GrilleTableau, deplier_tableau, texte_cellule, ligne_est_uniquement_entete, lecture_tableau
-from .utilitaires_texte import normaliser_texte, extraire_valeur_et_reste, formaliser_date
+from .config import ENTETES_NON_CANDIDATS
+from .tableau_html import deplier_tableau, lecture_tableau
+from .utilitaires_texte import formaliser_date, separer_nombre_texte, formaliser_valeur
 from .candidats import Candidats
 
 
@@ -34,108 +34,6 @@ class Sondage:
             "candidats": self.liste_candidats,
             "resultat": self.resultat,
         }
-
-
-def construire_entetes(grille: GrilleTableau) -> tuple[List[str], int]:
-    """
-    Fusionne les lignes d'en-tête successives d'une grille (lignes composées
-    uniquement de <th>) en un seul en-tête par colonne.
-
-    Certains tableaux de sondages ont deux lignes d'en-tête : une ligne de
-    regroupement par bloc politique ("Gauche", "Centre", ...) suivie d'une
-    ligne avec le nom précis de chaque candidat. Les deux sont concaténées
-    (ex: "Gauche – Mélenchon (LFI)") pour ne perdre aucune information.
-
-    Retourne (liste_des_entetes, nombre_de_lignes_entete).
-    """
-    nombre_lignes_entete = 0
-    for ligne in grille:
-        if ligne_est_uniquement_entete(ligne):
-            nombre_lignes_entete += 1
-        else:
-            break
-    nombre_lignes_entete = max(nombre_lignes_entete, 1)
-
-    lignes_entete = grille[:nombre_lignes_entete]
-    largeur_tableau = max((len(ligne) for ligne in lignes_entete), default=0)
-
-    entetes: List[str] = [""] * largeur_tableau
-
-    for indice_colonne in range(largeur_tableau):
-        morceaux_texte: List[str] = []
-        texte_precedent: Optional[str] = None
-
-        for ligne in lignes_entete:
-            if indice_colonne >= len(ligne):
-                continue
-            texte = texte_cellule(ligne[indice_colonne])
-            if texte and texte != texte_precedent:
-                morceaux_texte.append(texte)
-            texte_precedent = texte or texte_precedent
-
-        # dédoublonne tout en conservant l'ordre d'apparition
-        morceaux_uniques = dict.fromkeys(morceaux_texte)
-        entetes[indice_colonne] = " – ".join(morceaux_uniques)
-
-    return entetes, nombre_lignes_entete
-
-
-def analyser_cellule_resultat(cellule: Tag) -> tuple[Optional[str], Optional[float]]:
-    """
-    Analyse une cellule de résultat et retourne (nom_residuel, valeur).
-
-    Certaines colonnes ont un en-tête générique ("Autre", "PS", "LR", ...)
-    alors que le candidat réellement testé n'est précisé que dans la
-    cellule elle-même (ex: "4,5 (O. Faure)", "Ruffin 3").
-    `nom_residuel` correspond au texte restant une fois le nombre retiré
-    (None si la cellule ne contient qu'un nombre, ou aucun nombre exploitable).
-    """
-    texte = texte_cellule(cellule)
-    if not texte:
-        return None, None
-
-    valeur, texte_restant = extraire_valeur_et_reste(texte)
-    if valeur is None:
-        return None, None
-
-    # retire la ponctuation/symboles habituels : %, parenthèses, tirets, flèches de tendance, signe égal...
-    for caractere in "%()+=▲▼↑↓•·":
-        texte_restant = texte_restant.replace(caractere, " ")
-    texte_restant = " ".join(texte_restant.split()).strip(" -–—.,")
-
-    if len(texte_restant) < 2 or normaliser_texte(texte_restant) in MOTS_RESIDUELS_IGNORES:
-        texte_restant = None
-
-    return (texte_restant or None), valeur
-
-
-def fusionner_nom_candidat(nom_colonne: str, nom_residuel: Optional[str]) -> str:
-    """
-    Combine le nom de la colonne (en-tête, éventuellement générique comme
-    "Autre" ou "PS") avec le nom résiduel trouvé dans la cellule de résultat.
-
-    - Aucun nom résiduel : on garde simplement le nom de la colonne.
-    - Le nom résiduel est déjà contenu dans le nom de colonne (ou l'inverse) :
-      on évite la duplication et on garde le plus informatif des deux.
-    - Sinon (cas "Autre" + "F. Ruffin", ou "PS" + "O. Faure") : on combine
-      les deux, ex. "Autre (F. Ruffin)".
-    """
-    if not nom_residuel:
-        return nom_colonne
-    if not nom_colonne:
-        return nom_residuel
-
-    nom_colonne_normalise = normaliser_texte(nom_colonne)
-    nom_residuel_normalise = normaliser_texte(nom_residuel)
-
-    if nom_colonne_normalise == nom_residuel_normalise:
-        return nom_colonne
-    if nom_residuel_normalise in nom_colonne_normalise:
-        return nom_colonne
-    if nom_colonne_normalise in nom_residuel_normalise:
-        return nom_residuel
-
-    return f"{nom_colonne} ({nom_residuel})"
 
 
 def identifier_colonnes_meta(entetes: List[str]) -> tuple[Optional[int], Optional[int], Optional[int]]:
@@ -166,27 +64,13 @@ def analyser_sondage(sondage: list[str], indice_meta: list[dict[str,float|str]],
     resultat_sondage = []
     for indice, element in enumerate(sondage):
         if indice in indice_meta: continue
-        try: resultat_sondage+=([{'nom': nom_candidats[indice].strip(), 'valeur':float(element.replace(',','.').replace('<','').replace('>',''))}])
+        try: resultat_sondage+=([{'nom': nom_candidats[indice].strip(), 'valeur': formaliser_valeur(element)}])
         except ValueError:
             element_analyse = separer_nombre_texte(element)
             for e in element_analyse:
                 candidats.ajouter_candidats([e[0]])
                 resultat_sondage+=([{'nom':candidats.dictionnaire_candidats.get(e[0]), 'valeur':e[1]}])
     return resultat_sondage, candidats
-
-
-def separer_nombre_texte(cellule: str) -> list[list[float|str]]:
-    """Fonction pour séparer les valeurs des noms quand ces derniers sont dans la case des valeurs
-    ### Paramètres d'entrée:
-    - cellule: cellule contenant du texte à analyser
-    ### Sortie:
-    - resultat: Liste des paires valeur nom du candidat dans la cellule [[nom, valeur],...]"""
-    # Trouve toutes les paires (nombre, texte)
-    paires = re.findall(r'(\d+\.?\d*)([A-Za-zÀ-ÖØ-öø-ÿ ]+)', cellule.replace(',','.').replace('<','').replace('>',''))
-    resultat = []
-# Pour chaque paire, on ajoute la valeur converti en float et le nom du candidat dans la liste résultat qui sera renvoyée
-    for valeur, nom in paires: resultat.append([nom.strip(), float(valeur)])
-    return resultat
 
 
 def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str, annee_election: str) -> dict[str,List[Sondage]|list[str]]:

@@ -28,5 +28,5 @@ app.frontend("/", directory="frontend/nouveau_site")
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 
 if __name__ == "__main__":
-    sondages = get_sondages_premer_tour("2027")
+    sondages = get_sondages_premer_tour("2022")
     print(sondages)
