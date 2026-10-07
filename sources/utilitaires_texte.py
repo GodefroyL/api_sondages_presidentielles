@@ -11,18 +11,32 @@ from typing import Optional
 MOTIF_NOMBRE = re.compile(r"-?\d+[.,]?\d*")
 
 
-def formaliser_date(date: str)->str:
+def formaliser_date(date: str, annee: str, annee_election: str)->str:
     """
     Fonction pour formalier la date de la manière suivante:
     - 3 septembre 2026 => 03/09/2026
     """
+    nombre_mois = {'janvier': '01', 'fevrier': '02', 'mars': '03', 'avril': '04', 'mai': '05', 'juin': '06', 'juillet': '07', 'aout': '08', 'septembre': '09', 'octobre': '10', 'novembre': '11', 'decembre': '12'}
     try:
-        nombre_mois = {'janvier': '01', 'fevrier': '02', 'mars': '03', 'avril': '04', 'mai': '05', 'juin': '06', 'juillet': '07', 'aout': '08', 'septembre': '09', 'octobre': '10', 'novembre': '11', 'decembre': '12'}
+    # On conserve seulement le jour de fin du sondage quand il y a la date du début (ex: 26 mars - 28 mars)
         if '-' in date: date_formalisee = date[date.index('-'):][1:]
         else: date_formalisee = date
+
+    # Suppression des accents
         date_formalisee = date_formalisee.replace('é','e').replace('û','u').lower().split(' ')
+    # Remplacement de '1er' par '1'
+        date_formalisee[0] = date_formalisee[0].replace('er','')
+    # Suppression des éléments vides
         if '' in date_formalisee: date_formalisee.remove('')
+    # Remplacement du nom du mois par son numéro
         date_formalisee[1] = nombre_mois.get(date_formalisee[1])
+    # Si l'année n'est pas précisée dans la date, on l'ajoute
+        if len(date_formalisee) == 2: date_formalisee.append(annee)
+
+    # On ajoute la différence entre l'année de l'élection et 2027 pour que les différentes éléctions soient comparables sur le même calendrier
+        if annee_election != '2027':
+            date_formalisee[-1] = str(int(date_formalisee[-1])+(2027-int(annee_election)))
+
         date_formalisee = '/'.join(date_formalisee)
         if len(date_formalisee)==9: date_formalisee = '0'+date_formalisee
         return date_formalisee

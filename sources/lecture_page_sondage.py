@@ -60,7 +60,7 @@ def recuperer_sondages_premier_tour(
     for _, tableau in enumerate(tableaux, start=1):
         if type(tableau)==str: date = tableau
         else:
-            analyse_tableau_sondage = analyser_tableau_sondage(tableau, candidats, date)
+            analyse_tableau_sondage = analyser_tableau_sondage(tableau_html=tableau, candidats=candidats, annee=date, annee_election=annee)
             liste_sondages.extend(analyse_tableau_sondage.get('sondages'))
             for institut in analyse_tableau_sondage.get("instituts",[]): liste_instituts.add(institut)
             candidats = analyse_tableau_sondage.get("candidats")

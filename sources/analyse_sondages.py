@@ -189,7 +189,7 @@ def separer_nombre_texte(cellule: str) -> list[list[float|str]]:
     return resultat
 
 
-def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str) -> dict[str,List[Sondage]|list[str]]:
+def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str, annee_election: str) -> dict[str,List[Sondage]|list[str]]:
     """
     Analyse un tableau HTML de sondages (déjà repéré comme "wikitable") et retourne la liste des Sondage qu'il contient (une entrée par ligne, donc une entrée par hypothèse lorsqu'un sondage en teste plusieurs).
     ### Paramètres d'entrée:
@@ -237,9 +237,7 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
             date = ligne[colonne_date] if colonne_date is not None and colonne_date < len(ligne) else ""
             if institut == date: continue
         # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
-            date = formaliser_date(f'{date} {annee}')
-            if date == '27/03/2026':
-                print("test")
+            date = formaliser_date(date=date, annee=annee, annee_election=annee_election)
 
         # Analyse du sondage
             resultat = analyser_sondage(sondage=ligne,indice_meta=indice_meta,nom_candidats=noms_candidats_par_colonne, candidats=candidats)
