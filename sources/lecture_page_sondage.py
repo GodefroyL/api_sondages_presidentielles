@@ -24,6 +24,7 @@ Usage :
 
 import requests
 from bs4 import BeautifulSoup
+import re
 
 from .config import DELAI_MAXIMUM_REQUETE, EN_TETE_HTTP, TITRE_SECTION, URL_PAGE_WIKIPEDIA
 from .analyse_sondages import Sondage, analyser_tableau_sondage
@@ -57,7 +58,7 @@ def recuperer_sondages_premier_tour(
 
     date = annee
     for _, tableau in enumerate(tableaux, start=1):
-        if len(tableau) == 4: date = tableau
+        if type(tableau)==str: date = tableau
         else:
             analyse_tableau_sondage = analyser_tableau_sondage(tableau, candidats, date)
             liste_sondages.extend(analyse_tableau_sondage.get('sondages'))
