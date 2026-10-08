@@ -92,9 +92,13 @@ main {
   overflow-y: hidden;
   white-space: nowrap;
   cursor: grab;
+  direction: rtl;
 }
 .graphique:active {
   cursor: grabbing;
+}
+#svg_graphique {
+  direction: ltr;
 }
 
 /* Info-bulle affichée au survol des points */
