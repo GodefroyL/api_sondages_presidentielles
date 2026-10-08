@@ -1,32 +1,11 @@
-// ============================================================
-// graphique.js
-//
-// Trace un graphique multi-courbes (dates en abscisse, valeurs
-// en pourcentage en ordonnée), avec un axe des ordonnées fixe
-// et une zone de tracé qui défile horizontalement.
-//
-// Structure HTML attendue :
-//   <div id="zone_graphique">
-//     <div id="axe_fixe"></div>
-//     <div id="graphique"></div>
-//   </div>
-//   <div id="survol_points"></div>
-//
-// Le style est géré par graphique.css (à inclure dans la page).
-//
-// Utilisation :
+// Trace un graphique multi-courbes (dates en abscisse, valeurs en pourcentage en ordonnée), avec un axe des ordonnées fixe et une zone de tracé qui défile horizontalement.
+
 //   tracerGraphique(listeDeCourbes, listeDeLegendes);
-//
-//   listeDeCourbes  : tableau de courbes ; chaque courbe est un
-//                     tableau de points [date, valeur], où date
-//                     est une Date ou une chaîne interprétable
-//                     par `new Date()`, et valeur un nombre (%).
-//   listeDeLegendes : tableau de chaînes, une légende par courbe,
-//                     dans le même ordre que listeDeCourbes.
-// ============================================================
+//      listeDeCourbes  : tableau de courbes ; chaque courbe est un tableau de points [date, valeur], où date est une Date ou une chaîne interprétable par `new Date()`, et valeur un nombre (%).
+//      listeDeLegendes : tableau de chaînes, une légende par courbe, dans le même ordre que listeDeCourbes.
 
 const DIMENSIONS_BASE = {
-  pixelsParJour: 4,      // largeur horizontale allouée à chaque jour
+  pixelsParJour: 3,      // largeur horizontale allouée à chaque jour
   largeurAxeY: 50,
   hauteur: 380,
   margeHaut: 20,
@@ -67,10 +46,7 @@ function recupererElementsHtml() {
   };
 }
 
-// ---- Attribution d'une couleur par courbe ----
-// Les teintes sont réparties uniformément sur le cercle chromatique (360°),
-// ce qui garantit des couleurs toujours distinctes quel que soit le nombre
-// de courbes (contrairement à une palette fixe, limitée en nombre de couleurs).
+// Les teintes sont réparties uniformément sur le cercle chromatique (360°), ce qui garantit des couleurs toujours distinctes quel que soit le nombre de courbes (contrairement à une palette fixe, limitée en nombre de couleurs).
 function genererCouleurs(nombreCourbes) {
   const couleurs = [];
   for (let indice = 0; indice < nombreCourbes; indice++) {
@@ -80,9 +56,7 @@ function genererCouleurs(nombreCourbes) {
   return couleurs;
 }
 
-// ---- Conversion des dates + tri chronologique de chaque courbe ----
-// Tous les points sont conservés (y compris plusieurs points à la même date) :
-// ils servent ensuite pour l'affichage au survol.
+// Tous les points sont conservés (y compris plusieurs points à la même date) : ils servent ensuite pour l'affichage au survol.
 function normaliserCourbes(listeDeCourbes) {
   return listeDeCourbes.map(courbe =>
     courbe
@@ -91,9 +65,7 @@ function normaliserCourbes(listeDeCourbes) {
   );
 }
 
-// ---- Calcul d'une courbe "moyennée" : un seul point par date ----
-// Quand plusieurs points partagent la même date, la ligne tracée doit passer
-// par leur valeur moyenne plutôt que de zigzaguer entre eux.
+// Quand plusieurs points partagent la même date, la ligne tracée doit passer par leur valeur moyenne.
 function moyennerPointsParDate(courbe) {
   const groupesParDate = new Map();
 
@@ -111,7 +83,7 @@ function moyennerPointsParDate(courbe) {
   }));
 }
 
-// ---- Calcul des bornes globales (dates et valeurs, toutes courbes confondues) ----
+// Calcul des bornes globales (dates et valeurs, toutes courbes confondues)
 function calculerEchelles(courbesNormalisees) {
   const tousLesPoints = courbesNormalisees.flat();
   const toutesLesDates = tousLesPoints.map(point => point.date.getTime());
@@ -130,7 +102,7 @@ function calculerEchelles(courbesNormalisees) {
   return { dateMin, dateMax, valeurMin, valeurMax };
 }
 
-// ---- Calcul des dimensions du graphique en fonction de la plage de dates ----
+// Calcul des dimensions du graphique en fonction de la plage de dates
 function calculerDimensions(echelles) {
   const nombreJours = Math.max(1, Math.round((echelles.dateMax - echelles.dateMin) / (1000 * 60 * 60 * 24)));
   const largeurGraphique = nombreJours * DIMENSIONS_BASE.pixelsParJour;
@@ -138,7 +110,7 @@ function calculerDimensions(echelles) {
   return { ...DIMENSIONS_BASE, largeurTotale };
 }
 
-// ---- Fonction d'échelle : date -> position horizontale en pixels ----
+// Fonction d'échelle : date -> position horizontale en pixels
 function creerFonctionPositionX(echelles, dimensions) {
   return function positionX(date) {
     const jours = (date - echelles.dateMin) / (1000 * 60 * 60 * 24);
@@ -146,7 +118,7 @@ function creerFonctionPositionX(echelles, dimensions) {
   };
 }
 
-// ---- Fonction d'échelle : valeur -> position verticale en pixels ----
+// Fonction d'échelle : valeur -> position verticale en pixels
 function creerFonctionPositionY(echelles, dimensions) {
   return function positionY(valeur) {
     const hauteurUtile = dimensions.hauteur - dimensions.margeHaut - dimensions.margeBas;
@@ -155,7 +127,7 @@ function creerFonctionPositionY(echelles, dimensions) {
   };
 }
 
-// ---- Construction du SVG de l'axe Y (fixe, hors zone de défilement) ----
+// Construction du SVG de l'axe Y (fixe, hors zone de défilement)
 function dessinerAxeY(axeFixe, echelles, dimensions, positionY) {
   const svgAxeY = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svgAxeY.setAttribute('id', 'svg_axe_y');
@@ -168,7 +140,7 @@ function dessinerAxeY(axeFixe, echelles, dimensions, positionY) {
   axeFixe.appendChild(svgAxeY);
 }
 
-// ---- Construction des graduations et du trait vertical de l'axe Y ----
+// Construction des graduations et du trait vertical de l'axe Y
 function construireGraduationsAxeY(echelles, dimensions, positionY) {
   let contenu = '';
   for (let i = 0; i <= dimensions.nombreGraduationsY; i++) {
@@ -181,7 +153,7 @@ function construireGraduationsAxeY(echelles, dimensions, positionY) {
   return contenu;
 }
 
-// ---- Construction du SVG principal (zone défilante) ----
+// Construction du SVG principal (zone défilante)
 function dessinerGraphiquePrincipal(elementGraphique, courbesNormalisees, courbesMoyennees, listeDeLegendes, couleurs, echelles, dimensions, positionX, positionY) {
   const svgPrincipal = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svgPrincipal.setAttribute('id', 'svg_graphique');
@@ -203,7 +175,7 @@ function dessinerGraphiquePrincipal(elementGraphique, courbesNormalisees, courbe
   return svgPrincipal;
 }
 
-// ---- Grille horizontale, alignée sur les graduations de l'axe Y fixe ----
+// Grille horizontale, alignée sur les graduations de l'axe Y fixe
 function dessinerGrilleHorizontale(echelles, dimensions, positionY) {
   let contenu = '';
   for (let i = 0; i <= dimensions.nombreGraduationsY; i++) {
@@ -214,7 +186,7 @@ function dessinerGrilleHorizontale(echelles, dimensions, positionY) {
   return contenu;
 }
 
-// ---- Grille verticale et étiquettes de l'axe X : une graduation par mois ----
+// Grille verticale et étiquettes de l'axe X : une graduation par mois
 function dessinerGraduationsMensuellesAxeX(echelles, dimensions, positionX) {
   let contenu = '';
   let moisPrecedent = null;
@@ -235,12 +207,12 @@ function dessinerGraduationsMensuellesAxeX(echelles, dimensions, positionX) {
   return contenu;
 }
 
-// ---- Ligne horizontale du bas (axe X) ----
+// Ligne horizontale du bas (axe X)
 function dessinerLigneAxeX(dimensions) {
   return `<line class="trait_axe" x1="0" y1="${dimensions.hauteur - dimensions.margeBas}" x2="${dimensions.largeurTotale}" y2="${dimensions.hauteur - dimensions.margeBas}" />`;
 }
 
-// ---- Tracé de la ligne (polyline) de chaque courbe, à partir des points moyennés par date ----
+// Tracé de la ligne (polyline) de chaque courbe, à partir des points moyennés par date
 function dessinerCourbes(courbesMoyennees, couleurs, positionX, positionY) {
   let contenu = '';
   courbesMoyennees.forEach((courbe, indiceCourbe) => {
@@ -250,7 +222,7 @@ function dessinerCourbes(courbesMoyennees, couleurs, positionX, positionY) {
   return contenu;
 }
 
-// ---- Cercles semi-transparents servant au survol (tous les points) ----
+// Cercles semi-transparents servant au survol (tous les points)
 function dessinerPointsSurvolables(courbesNormalisees, listeDeLegendes, couleurs, positionX, positionY) {
   let contenu = '';
   let indiceGlobal = 0;
@@ -268,7 +240,7 @@ function dessinerPointsSurvolables(courbesNormalisees, listeDeLegendes, couleurs
   return contenu;
 }
 
-// ---- Construction (ou mise à jour) de la légende des courbes ----
+// Construction (ou mise à jour) de la légende des courbes
 function dessinerLegende(legendeGraphique, listeDeLegendes, couleurs) {
   legendeGraphique.innerHTML = listeDeLegendes
     .map((nom, indice) => `
@@ -280,23 +252,27 @@ function dessinerLegende(legendeGraphique, listeDeLegendes, couleurs) {
     .join('');
 }
 
-// ---- Mise en place des écouteurs pour l'info-bulle au survol des points ----
+// Mise en place des écouteurs pour l'info-bulle au survol des points
 function activerInfoBulle(svgPrincipal, zoneSurvol) {
   svgPrincipal.addEventListener('mousemove', evenement => afficherInfoBulle(evenement, zoneSurvol));
   svgPrincipal.addEventListener('mouseleave', () => masquerInfoBulle(zoneSurvol));
 }
 
-// ---- Affichage de l'info-bulle si la souris survole un point ----
+// Affichage de l'info-bulle si la souris survole un point
 function afficherInfoBulle(evenement, zoneSurvol) {
   if (!evenement.target.classList.contains('point_survol')) {
     masquerInfoBulle(zoneSurvol);
     return;
   }
   const cible = evenement.target.dataset;
+  let date = cible.date.slice(-4);
+  // Ajustement de la date pour corriger le décalage de date : 2022 -> -5 ans, 2017 -> -10 ans
+  if (cible.legende.includes('2022')) {date = cible.date.slice(0, 6) + String(Number(date) - 5);}
+  if(cible.legende.includes('2017')) {date = cible.date.slice(0, 6) + String(Number(date) - 10);}
   zoneSurvol.classList.add('visible');
   zoneSurvol.style.left = (evenement.clientX + 12) + 'px';
   zoneSurvol.style.top = (evenement.clientY - 10) + 'px';
-  zoneSurvol.textContent = `${cible.legende} — ${cible.date} : ${cible.valeur}%`;
+  zoneSurvol.textContent = `${cible.legende} — ${date} : ${cible.valeur}%`;
 }
 
 // ---- Masquage de l'info-bulle ----

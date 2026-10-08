@@ -1,17 +1,7 @@
-// accueil.js
-// Page d'accueil : sélection des instituts, des années et des candidats.
-// À chaque changement de sélection :
-//   preparation_courbes(candidats, instituts, sondages)  ->  graphique(retour)
-//
-// Dépendances (à charger AVANT ce fichier) :
-//   - charger_donnees(annee, tour)   (gestion_api.js)
-//   - preparation_courbes(...)
-//   - graphique(...)
+// Page d'accueil : sélection des instituts, des années et des candidats. À chaque changement de sélection :
+//      preparation_courbes(candidats, instituts, sondages)  ->  graphique(retour)
 
-// ---------------------------------------------------------------------------
 // Configuration et import des fonctions externes
-// ---------------------------------------------------------------------------
-
 import { charger_donnees } from "./gestion_api.js";
 import { preparation_courbes } from "./gestion_donnees.js";
 import { tracerGraphique } from "./graphiques.js"
@@ -19,16 +9,12 @@ import { tracerGraphique } from "./graphiques.js"
 const ANNEES = [2027, 2022];
 const TOUR = 'premier_tour/';
 
-// Candidats cochés par défaut, par année.
-// Les noms absents des données sont simplement ignorés.
+// Candidats cochés par défaut.
 const CANDIDATS_PAR_DEFAUT = {
     2027: ["Le Pen(RN)", "Mélenchon(LFI)", "Philippe(HOR)", "Glucksmann(PP)", "Attal(RE)", "Retailleau(LR)"],
 };
 
-// ---------------------------------------------------------------------------
-// État de la page
-// ---------------------------------------------------------------------------
-
+// État de l'application : données et sélection de l'utilisateur
 const etat = {
     sondages: {},           // { annee: sondages }
     candidats: {},          // { annee: [noms des candidats] }
@@ -37,11 +23,8 @@ const etat = {
     candidats_coches: {},   // { annee: Set des noms cochés }
 };
 
-// ---------------------------------------------------------------------------
 // Chargement des données
-// ---------------------------------------------------------------------------
-
-async function charger_annee(annee) {
+async function charger_election(annee) {
     try {
         // Promise.resolve : fonctionne que charger_donnees soit synchrone ou asynchrone
         let url = TOUR+annee
@@ -53,8 +36,9 @@ async function charger_annee(annee) {
     }
 }
 
-async function charger_toutes_les_annees() {
-    const resultats = await Promise.all(ANNEES.map(charger_annee));
+// Fonction principale de chargement des données pour toutes les élections
+async function charger_toutes_les_elections() {
+    const resultats = await Promise.all(ANNEES.map(charger_election));
 
     ANNEES.forEach((annee, i) => {
         const donnees = resultats[i];
@@ -68,7 +52,7 @@ async function charger_toutes_les_annees() {
         etat.sondages[annee] = donnees.sondages;
         etat.candidats[annee] = donnees["liste candidats"] ?? donnees.liste_candidats ?? [];
 
-        // Union des instituts, en conservant l'ordre d'apparition
+    // Union des instituts, en conservant l'ordre d'apparition
         (donnees.liste_instituts ?? []).forEach(institut => {
             if (!etat.instituts.includes(institut)) {
                 etat.instituts.push(institut);
@@ -88,9 +72,7 @@ function initialiser_selection_par_defaut() {
     });
 }
 
-// ---------------------------------------------------------------------------
 // Construction des éléments HTML
-// ---------------------------------------------------------------------------
 
 // <label><input type="checkbox"> libellé</label>
 function creer_case(libelle, coche, au_changement) {
@@ -107,17 +89,14 @@ function creer_case(libelle, coche, au_changement) {
     return { label, input };
 }
 
-// ---------------------------------------------------------------------------
 // Instituts
-// ---------------------------------------------------------------------------
-
 function afficher_instituts() {
     const zone = document.getElementById("instituts");
     zone.innerHTML = "";
 
     const cases_instituts = [];
 
-    // Option « Tous »
+// Option « Tous »
     const tous = creer_case("Tous", true, coche => {
         etat.instituts_coches = coche ? new Set(etat.instituts) : new Set();
         cases_instituts.forEach(c => { c.checked = coche; });
@@ -126,7 +105,6 @@ function afficher_instituts() {
     tous.label.classList.add("case--tous");
     zone.appendChild(tous.label);
 
-    // Un institut = une case
     etat.instituts.forEach(institut => {
         const c = creer_case(institut, etat.instituts_coches.has(institut), coche => {
             if (coche) {
@@ -144,10 +122,7 @@ function afficher_instituts() {
     tous.input.checked = etat.instituts_coches.size === etat.instituts.length;
 }
 
-// ---------------------------------------------------------------------------
 // Années et candidats
-// ---------------------------------------------------------------------------
-
 function afficher_panneau_annees() {
     const panneau = document.getElementById("panneau_droite");
     panneau.innerHTML = "";
@@ -162,7 +137,7 @@ function afficher_panneau_annees() {
         bouton.textContent = annee;
         bouton.setAttribute("aria-expanded", "false");
 
-        // Liste des candidats, en ligne, masquée tant qu'on n'a pas cliqué sur l'année
+    // Liste des candidats, en ligne, masquée tant qu'on n'a pas cliqué sur l'année
         const liste = document.createElement("div");
         liste.className = "liste_candidats";
         liste.style.display = "none";
@@ -199,10 +174,7 @@ function afficher_panneau_annees() {
     });
 }
 
-// ---------------------------------------------------------------------------
 // Mise à jour du graphique
-// ---------------------------------------------------------------------------
-
 // Candidats cochés, avec l'année de l'élection : [{ nom, annee }, ...]
 function lister_candidats_coches() {
     const candidats = [];
@@ -221,25 +193,17 @@ function mettre_a_jour() {
     const instituts = etat.instituts.filter(i => etat.instituts_coches.has(i));
 
     const info_graphique = preparation_courbes(candidats, instituts, etat.sondages);
-    console.log('courbes', info_graphique[0])
-    console.log('legendes', info_graphique[1])
     tracerGraphique(info_graphique[0], info_graphique[1]);
 }
 
-// ---------------------------------------------------------------------------
 // Démarrage
-// ---------------------------------------------------------------------------
-
 async function initialiser_accueil() {
-    await charger_toutes_les_annees();
+    await charger_toutes_les_elections();
     initialiser_selection_par_defaut();
     afficher_instituts();
     afficher_panneau_annees();
     mettre_a_jour();
 }
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initialiser_accueil);
-} else {
-    initialiser_accueil();
-}
+if (document.readyState === "loading") {document.addEventListener("DOMContentLoaded", initialiser_accueil);}
+else {initialiser_accueil();}
