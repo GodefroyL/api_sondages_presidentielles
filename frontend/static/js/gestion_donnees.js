@@ -41,7 +41,7 @@ export function preparation_courbes(candidats, instituts, sondages) {
             if (!date) return;
 
             // resultat = [ [ {nom, valeur}, ... ], { dictionnaires... } ]
-            const lignes = sondage.resultat?.[0] ?? [];
+            const lignes = sondage.resultat ?? [];
 
             // find : un seul point par sondage même si le candidat est dupliqué dans la liste
             const ligne = lignes.find(l => l.nom === nom);

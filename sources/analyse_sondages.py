@@ -126,11 +126,11 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
             date = formaliser_date(date=date, annee=annee, annee_election=annee_election)
 
         # Analyse du sondage
-            resultat = analyser_sondage(sondage=ligne, indice_meta=indice_meta, nom_candidats=noms_candidats_par_colonne, candidats=candidats)
+            resultat, _ = analyser_sondage(sondage=ligne, indice_meta=indice_meta, nom_candidats=noms_candidats_par_colonne, candidats=candidats)
 
             if not resultat: continue
 
-            candidats_sonde = [element.get('nom') for element in resultat[0]]
+            candidats_sonde = [element.get('nom') for element in resultat]
 
             sondages.append(Sondage(institut=institut, date=date, liste_candidats=candidats_sonde, resultat=resultat))
 
