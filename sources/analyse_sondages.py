@@ -63,7 +63,7 @@ def analyser_sondage(sondage: list[str], indice_meta: list[dict[str,float|str]],
     resultat_sondage = []
     for indice, element in enumerate(sondage):
         if indice in indice_meta: continue
-        try: resultat_sondage+=([{'nom': nom_candidats[indice].strip(), 'valeur': formaliser_valeur(element)}])
+        try: resultat_sondage+=([{'nom': candidats.dictionnaire_candidats.get(nom_candidats[indice].strip()), 'valeur': formaliser_valeur(element)}])
         except ValueError:
             element_analyse = separer_nombre_texte(element)
             for e in element_analyse:
