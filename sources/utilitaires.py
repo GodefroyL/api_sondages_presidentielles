@@ -17,8 +17,6 @@ def formaliser_date(date: str, annee: str, annee_election: str)->str:
     # On conserve seulement le jour de fin du sondage quand il y a la date du début (ex: 26 mars - 28 mars)
         if '-' in date: date_formalisee = date[date.index('-'):][1:]
         else: date_formalisee = date
-        if 'er' in date:
-            print('test')
     # Suppression des accents
         date_formalisee = date_formalisee.replace('é','e').replace('û','u').lower().split(' ')
     # Suppression des éléments vides
