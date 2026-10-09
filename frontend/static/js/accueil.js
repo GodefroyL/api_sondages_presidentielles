@@ -11,7 +11,7 @@ const TOUR = 'premier_tour/';
 
 // Candidats cochés par défaut.
 const CANDIDATS_PAR_DEFAUT = {
-    2027: ["Le Pen(RN)", "Mélenchon(LFI)", "Philippe(HOR)", "Glucksmann(PP)", "Attal(RE)", "Retailleau(LR)"],
+    2027: ["Le Pen (RN)", "Mélenchon (LFI)", "Philippe (HOR)", "Glucksmann (PP)", "Attal (RE)", "Retailleau (LR)"],
 };
 
 // État de l'application : données et sélection de l'utilisateur

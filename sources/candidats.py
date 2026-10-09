@@ -27,7 +27,7 @@ class Candidats:
     def ajouter_candidats(self, liste_candidats: list) -> None:
         """Fonction pour ajouter des candidats dans le dictionnaire"""
         for candidat in liste_candidats:
-            if candidat not in self.dictionnaire_candidats.keys():self.maj_dictionnaire(candidat=candidat)
+            if candidat not in self.dictionnaire_candidats.keys(): self.maj_dictionnaire(candidat=candidat)
 
 
     @staticmethod
@@ -44,12 +44,11 @@ class Candidats:
         - nouveau_nom: nom qui remplace le précédent
         """
         for clef in self.dictionnaire_candidats.keys():
-            if self.dictionnaire_candidats.get(clef)==ancien_nom:
-                self.dictionnaire_candidats[clef] = nouveau_nom
+            if self.dictionnaire_candidats.get(clef) == ancien_nom: self.dictionnaire_candidats[clef] = nouveau_nom.replace('(',' (').replace('  ',' ')
             self.maj_liste_candidats()
 
 
-    def maj_dictionnaire(self,  candidat: str) -> None:
+    def maj_dictionnaire(self, candidat: str) -> None:
         """
         Fonction pour mettre à jour le dictionnaire des candidats
         Pour chaque nouveau nom de `liste`, la fonction détermine son nom "de base" (sans le parti entre parenthèses) et vérifie s'il correspond à un candidat déjà présent dans `dictionnaire` :
@@ -75,7 +74,7 @@ class Candidats:
                     self.dictionnaire_candidats[candidat] = candidat
                 else: self.dictionnaire_candidats[candidat] = self.base_liste_candidats[nom]
                 return None
-        self.dictionnaire_candidats[candidat] = candidat
+        self.dictionnaire_candidats[candidat] = candidat.replace('(',' (').replace('  ',' ')
         self.maj_liste_candidats()
 
 

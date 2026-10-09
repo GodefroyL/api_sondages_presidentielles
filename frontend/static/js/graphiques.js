@@ -269,6 +269,8 @@ function afficherInfoBulle(evenement, zoneSurvol) {
   // Ajustement de la date pour corriger le décalage de date : 2022 -> -5 ans, 2017 -> -10 ans
   if (cible.legende.includes('2022')) {date = cible.date.slice(0, 6) + String(Number(date) - 5);}
   if(cible.legende.includes('2017')) {date = cible.date.slice(0, 6) + String(Number(date) - 10);}
+  if(cible.legende.includes('2027')) {date = cible.date}
+
   zoneSurvol.classList.add('visible');
   zoneSurvol.style.left = (evenement.clientX + 12) + 'px';
   zoneSurvol.style.top = (evenement.clientY - 10) + 'px';

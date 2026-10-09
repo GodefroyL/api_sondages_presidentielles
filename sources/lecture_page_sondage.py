@@ -66,7 +66,8 @@ def recuperer_sondages_premier_tour(
 
     sondages =  {indice+1: sondage.vers_dictionnaire() for indice, sondage in enumerate(liste_sondages)}
 
-    liste_candidats = [candidat for candidat in candidats.liste_candidats if candidats.info_candidats[candidat]["nombre_sondages"]>=50 or candidats.info_candidats[candidat]["sondage_recent"]==True]
+    liste_candidats = [candidat for candidat in candidats.liste_candidats if candidat != "" and candidats.info_candidats[candidat]["nombre_sondages"]>=50 or candidats.info_candidats[candidat]["sondage_recent"]==True]
+
     return {
         "annee": annee,
         "tour": 1,
