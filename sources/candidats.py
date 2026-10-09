@@ -4,14 +4,22 @@ class Candidats:
     """Classe pour la gestion des candidats"""
     def __init__(self):
         self.dictionnaire_candidats = {}
+        self.info_candidats = {}
         self.liste_candidats = []
         self.base_liste_candidats = {}
+
+
+    def ajout_sondage_candidat(self, candidat: str, sondage_recent: bool = False) -> None:
+        """Fonction pour ajouter un sondage à un candidat afin de savoir combien de fois chaque candidat est sondé et s'il est sondé dans le sondage le plus récent"""
+        self.info_candidats[candidat]["nombre_sondages"] += 1
+        self.info_candidats[candidat]["sondage_recent"] = sondage_recent
 
 
     def maj_liste_candidats(self) -> list[str]:
         """Fonction pour mettre à jour la liste des candidats"""
         for clef in self.dictionnaire_candidats.keys():
             if self.dictionnaire_candidats.get(clef) not in self.liste_candidats:
+                self.info_candidats[self.dictionnaire_candidats.get(clef)] = {"nombre_sondages": 0, "sondage_recent": False}
                 self.liste_candidats.append(self.dictionnaire_candidats.get(clef))
         self.base_liste_candidats = {self.base_nom(nom): nom for nom in self.liste_candidats}
 

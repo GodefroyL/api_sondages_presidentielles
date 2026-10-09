@@ -7,7 +7,7 @@ Fonctions bas niveau pour manipuler des tableaux HTML issus de Wikipédia :
 from typing import List, Optional
 from bs4 import Tag
 
-from .utilitaires_texte import nettoyer_texte
+from .utilitaires import nettoyer_texte
 
 # Une cellule de la grille dépliée est soit une balise BeautifulSoup, soit None
 Cellule = Optional[Tag]

@@ -5,7 +5,7 @@ indépendantes de toute logique HTML ou métier.
 
 import re
 import unicodedata
-
+import datetime
 
 def formaliser_date(date: str, annee: str, annee_election: str)->str:
     """
@@ -17,13 +17,14 @@ def formaliser_date(date: str, annee: str, annee_election: str)->str:
     # On conserve seulement le jour de fin du sondage quand il y a la date du début (ex: 26 mars - 28 mars)
         if '-' in date: date_formalisee = date[date.index('-'):][1:]
         else: date_formalisee = date
-
+        if 'er' in date:
+            print('test')
     # Suppression des accents
         date_formalisee = date_formalisee.replace('é','e').replace('û','u').lower().split(' ')
+    # Suppression des éléments vides
+        date_formalisee = [element for element in date_formalisee if element != '']
     # Remplacement de '1er' par '1'
         date_formalisee[0] = date_formalisee[0].replace('er','')
-    # Suppression des éléments vides
-        if '' in date_formalisee: date_formalisee.remove('')
     # Remplacement du nom du mois par son numéro
         date_formalisee[1] = nombre_mois.get(date_formalisee[1])
     # Si l'année n'est pas précisée dans la date, on l'ajoute
@@ -94,3 +95,16 @@ def normaliser_texte(texte: str) -> str:
     )
     texte_final = re.sub(r"[^a-z0-9 ]", "", texte_sans_accents)
     return texte_final.strip()
+
+
+def sondage_recent(date_sondage: str, annee_election: str) -> bool:
+    """
+    Fonction pour savoir si le sondage est récent ou pas
+    Un sondage est considéré comme récent si sa date est inférieure à 2 mois par rapport à la date d'aujourd'hui
+    """
+    if annee_election != '2027': return False
+    date = datetime.datetime.now().date()
+    date_sondage = date_sondage.split("/")
+    date_sondage = datetime.datetime(int(date_sondage[2]), int(date_sondage[1]), int(date_sondage[0])).date()
+    difference = date - date_sondage
+    return difference.days <= 60

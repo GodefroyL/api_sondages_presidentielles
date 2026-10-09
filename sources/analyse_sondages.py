@@ -9,7 +9,7 @@ from bs4 import Tag
 
 from .config import ENTETES_NON_CANDIDATS
 from .tableau_html import deplier_tableau, lecture_tableau
-from .utilitaires_texte import formaliser_date, separer_nombre_texte, formaliser_valeur
+from .utilitaires import formaliser_date, separer_nombre_texte, formaliser_valeur, sondage_recent
 from .candidats import Candidats
 
 
@@ -126,11 +126,13 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
             date = formaliser_date(date=date, annee=annee, annee_election=annee_election)
 
         # Analyse du sondage
-            resultat, _ = analyser_sondage(sondage=ligne, indice_meta=indice_meta, nom_candidats=noms_candidats_par_colonne, candidats=candidats)
+            resultat, candidats = analyser_sondage(sondage=ligne, indice_meta=indice_meta, nom_candidats=noms_candidats_par_colonne, candidats=candidats)
 
             if not resultat: continue
 
             candidats_sonde = [element.get('nom') for element in resultat]
+        # Ajout du sondage pour chaque candidat sondé afin de connaitre le nombre de sondages pour chaque candidat
+            for candidat in candidats_sonde: candidats.ajout_sondage_candidat(candidat=candidat, sondage_recent=sondage_recent(date, annee_election))
 
             sondages.append(Sondage(institut=institut, date=date, liste_candidats=candidats_sonde, resultat=resultat))
 
