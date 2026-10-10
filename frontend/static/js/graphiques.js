@@ -10,6 +10,7 @@ const DIMENSIONS_BASE = {
   hauteur: 380,
   margeHaut: 20,
   margeBas: 30,
+  margeGauche: 20,
   margeDroite: 20,
   nombreGraduationsY: 5
 };
@@ -114,7 +115,7 @@ function calculerDimensions(echelles) {
 function creerFonctionPositionX(echelles, dimensions) {
   return function positionX(date) {
     const jours = (date - echelles.dateMin) / (1000 * 60 * 60 * 24);
-    return jours * dimensions.pixelsParJour;
+    return DIMENSIONS_BASE.margeGauche + jours * dimensions.pixelsParJour;
   };
 }
 
