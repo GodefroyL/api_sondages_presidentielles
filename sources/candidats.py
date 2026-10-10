@@ -12,7 +12,7 @@ class Candidats:
     def ajout_sondage_candidat(self, candidat: str, sondage_recent: bool = False) -> None:
         """Fonction pour ajouter un sondage à un candidat afin de savoir combien de fois chaque candidat est sondé et s'il est sondé dans le sondage le plus récent"""
         self.info_candidats[candidat]["nombre_sondages"] += 1
-        self.info_candidats[candidat]["sondage_recent"] = sondage_recent
+        self.info_candidats[candidat]["sondage_recent"] = sondage_recent or self.info_candidats[candidat]["sondage_recent"]
 
 
     def maj_liste_candidats(self) -> list[str]:
