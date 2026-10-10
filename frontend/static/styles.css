@@ -44,10 +44,12 @@ body::before {
   display: flex;
   justify-content: center;
   text-align: center;
-  font-size: 30px;
+  font-size: clamp(15px, 2vw, 30px);
+  white-space: nowrap;
   font-weight: bold;
   color: #55aaee;
   -webkit-text-stroke: 0.3px black;
+  border-radius: 5px;
   min-width: 400px;
   width: 70%;
   height: 50px;
@@ -93,7 +95,6 @@ main {
   .titre{
     min-width: 0;
     width: 100%;
-    font-size: 15px;
     padding: 2px 0;
     height: 34px;
   }
@@ -133,12 +134,17 @@ button {
 .instituts {
   margin: 5px 0px;
 }
+.bouton_institut {
+  display: none;
+}
 
 @media (max-width: 1000px) {
   .case {
     font-size: 0.5rem;
   }
-
+  .bouton_institut {
+    display: list-item;
+  }
 }
 /* Styles pour le graphique tracé par graphique.js */
 .zone_graphique {

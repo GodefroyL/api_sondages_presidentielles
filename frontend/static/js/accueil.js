@@ -207,3 +207,18 @@ async function initialiser_accueil() {
 
 if (document.readyState === "loading") {document.addEventListener("DOMContentLoaded", initialiser_accueil);}
 else {initialiser_accueil();}
+
+let timer;
+
+window.addEventListener("resize", () => {
+    clearTimeout(timer);
+
+    timer = setTimeout(() => {
+        const details = document.querySelector("details");
+        if (window.innerWidth <= 1000) {
+            details.removeAttribute("open");
+        } else {
+            details.setAttribute("open", "");
+        }
+    }, 200);
+});
