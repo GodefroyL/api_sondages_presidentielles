@@ -107,7 +107,7 @@ function calculerEchelles(courbesNormalisees) {
 function calculerDimensions(echelles) {
   const nombreJours = Math.max(1, Math.round((echelles.dateMax - echelles.dateMin) / (1000 * 60 * 60 * 24)));
   const largeurGraphique = nombreJours * DIMENSIONS_BASE.pixelsParJour;
-  const largeurTotale = largeurGraphique + DIMENSIONS_BASE.margeDroite;
+  const largeurTotale = DIMENSIONS_BASE.margeGauche + largeurGraphique + DIMENSIONS_BASE.margeDroite;
   return { ...DIMENSIONS_BASE, largeurTotale };
 }
 
