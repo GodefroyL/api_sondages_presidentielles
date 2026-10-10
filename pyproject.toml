@@ -8,4 +8,5 @@ dependencies = [
     "beautifulsoup4>=4.15.0",
     "fastapi[standard]>=0.141.1",
     "requests>=2.34.2",
+    "requests-cache>=1.3.3",
 ]

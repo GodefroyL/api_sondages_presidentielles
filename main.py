@@ -1,15 +1,17 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+import requests_cache
+from functools import lru_cache
 
 from sources import lecture_page_sondage
 
-app = FastAPI()
+# Configuration du cache pour les requêtes HTTP
+requests_cache.install_cache('sondages_cache', backend='memory', expire_after=3600, allowable_methods=['GET'], max_size=100)
 
-@app.get("/")
-def read_root():
-    return {"message": "Bienvenue sur l'API des sondages du premier tour de l'élection présidentielle."}
+app = FastAPI(title="API Sondages Présidentielles", description="API pour récupérer les sondages du premier tour de l'élection présidentielle française.", version="1.0.0")
 
 @app.get("/premier_tour/{annee}")
+@lru_cache(maxsize=3)
 def get_sondages_premer_tour(annee: str):
     """
     Endpoint pour récupérer les sondages du premier tour de l'élection présidentielle.
@@ -18,6 +20,7 @@ def get_sondages_premer_tour(annee: str):
     else: return lecture_page_sondage.main(annee)
 
 @app.get("/second_tour/{annee}")
+@lru_cache(maxsize=3)
 def get_sondages_second_tour(annee: str):
     """
     Endpoint pour récupérer les sondages du second tour de l'élection présidentielle.

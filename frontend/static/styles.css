@@ -97,6 +97,7 @@ main {
     width: 100%;
     padding: 2px 0;
     height: 34px;
+    white-space: normal;
   }
   main {
     flex-direction: column;

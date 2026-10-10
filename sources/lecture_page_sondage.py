@@ -24,6 +24,7 @@ Usage :
 
 import requests
 from bs4 import BeautifulSoup
+from functools import lru_cache
 
 from .config import DELAI_MAXIMUM_REQUETE, EN_TETE_HTTP, TITRE_SECTION, URL_PAGE_WIKIPEDIA
 from .analyse_sondages import Sondage, analyser_tableau_sondage
@@ -31,7 +32,7 @@ from .section_wikipedia import trouver_tableaux_section
 from .candidats import Candidats
 
 
-
+@lru_cache(maxsize=3)
 def recuperer_page_html(url: str) -> BeautifulSoup:
     """Télécharge la page Wikipédia et retourne son contenu analysé (BeautifulSoup)."""
     reponse = requests.get(url, headers=EN_TETE_HTTP, timeout=DELAI_MAXIMUM_REQUETE)
@@ -39,6 +40,7 @@ def recuperer_page_html(url: str) -> BeautifulSoup:
     return BeautifulSoup(reponse.text, "html.parser")
 
 
+@lru_cache(maxsize=3)
 def recuperer_sondages_premier_tour(
     annee: str = "2027",
     url: str = URL_PAGE_WIKIPEDIA,
