@@ -14,6 +14,15 @@ const DIMENSIONS_BASE = {
   margeDroite: 20,
   nombreGraduationsY: 5
 };
+if (screen.width < 600) {
+  DIMENSIONS_BASE.pixelsParJour = 2;
+  DIMENSIONS_BASE.largeurAxeY = 35;
+  DIMENSIONS_BASE.hauteur =250;
+  DIMENSIONS_BASE.margeHaut = 10;
+  DIMENSIONS_BASE.margeBas = 25;
+  DIMENSIONS_BASE.margeGauche = 10;
+  DIMENSIONS_BASE.margeDroite = 10;
+}
 
 // ---- Fonction principale : orchestre l'ensemble du tracé ----
 export function tracerGraphique(listeDeCourbes, listeDeLegendes) {

@@ -1,9 +1,43 @@
 /* Style des composants de base l'accueil*/
+* {
+  box-sizing: border-box;
+}
+
 body {
   display: flex;
   align-items: center;
   flex-direction: column;
   background-color: beige;
+
+  position: relative;
+  isolation: isolate;
+}
+
+/* Image de fond fixe */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 70vw;
+  height: 100vh;
+
+  background-image: url('images/image_arriere_plan.jpg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+
+  z-index: -1;
+  pointer-events: none;
+}
+
+@media (max-width: 1000px) {
+  body::before {
+    width: 100vw;
+    background-image: url('images/image_arriere_plan_tel.jpg');
+  }
 }
 
 .titre {
@@ -16,6 +50,7 @@ body {
   -webkit-text-stroke: 0.3px black;
   min-width: 400px;
   width: 70%;
+  height: 50px;
   padding: 10px 0;
   background-image: url('images/drapeau.jpeg');
   background-repeat: no-repeat;
@@ -28,11 +63,10 @@ main {
   flex-direction: row;
   min-width: 400px;
   width: 70%;
-  height: 1000px;
-  background-image: url('images/image_arriere_plan.jpg');
-  background-repeat: no-repeat;
-  background-size: contain;
+  height: calc(100vh - 50px);
+  padding: 10px 5px 30px 5px;
 }
+
 
 .conteneur {
   border-radius: 15px;
@@ -44,28 +78,37 @@ main {
 
 .conteneur--gauche {
   width: 70%;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
 }
 
 .conteneur--droit {
   width: 30%;
   background-color: rgba(200, 200, 200, 0.7);
+  overflow-y: auto;
 }
 
 @media (max-width: 1000px) {
   .titre{
     min-width: 0;
+    width: 100%;
     font-size: 15px;
     padding: 2px 0;
+    height: 34px;
   }
   main {
     flex-direction: column;
+    row-gap: 5px;
     width: 100%;
+    height: calc(100vh - 34px);
     margin: 0%;
     min-width: 0;
-    background-image: url('images/image_arriere_plan_tel.jpg');
   }
+
   .conteneur {
-    width: 100%;
+    width: 96%;
+    margin: 0 2%;
     min-width: 0;
   }
 }
@@ -114,7 +157,6 @@ button {
   flex: 0 0 auto;
   border-right: 1px solid #eeeeee;
   z-index: 2;
-  margin-right: 10px;
 }
 
 /* Zone scrollable : grille + courbes + axe X */
@@ -124,6 +166,10 @@ button {
   white-space: nowrap;
   cursor: grab;
   direction: rtl;
+  margin: 5px;
+}
+@media (max-width: 1000px) {
+  .graphique {margin: 2px;}
 }
 .graphique:active {
   cursor: grabbing;
@@ -179,8 +225,6 @@ button {
 
 /* Légende des courbes */
 .legende_graphique {
-  display: flex;
-  gap: 12px;
   font-size: 12px;
   font-family: system-ui, sans-serif;
   background: rgba(255, 255, 255, 0.8);
@@ -192,6 +236,7 @@ button {
   align-items: center;
   gap: 4px;
   min-width: 80px;
+  margin: 5px;
 }
 .pastille_legende {
   width: 10px;
