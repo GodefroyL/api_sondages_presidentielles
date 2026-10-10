@@ -106,3 +106,10 @@ def sondage_recent(date_sondage: str, annee_election: str) -> bool:
     date_sondage = datetime.datetime(int(date_sondage[2]), int(date_sondage[1]), int(date_sondage[0])).date()
     difference = date - date_sondage
     return difference.days <= 60
+
+
+def formaliser_institut(institut: str) -> str:
+    """Fonction pour formaliser le nom de l'institut de sondage"""
+    institut = institut.replace('-',' ').split(' ')
+    institut = ' '.join([mot.capitalize() for mot in institut])
+    return institut

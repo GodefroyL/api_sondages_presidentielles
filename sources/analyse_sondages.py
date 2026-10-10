@@ -9,7 +9,7 @@ from bs4 import Tag
 
 from .config import ENTETES_NON_CANDIDATS
 from .tableau_html import deplier_tableau, lecture_tableau
-from .utilitaires import formaliser_date, separer_nombre_texte, formaliser_valeur, sondage_recent
+from .utilitaires import formaliser_date, separer_nombre_texte, formaliser_valeur, sondage_recent, formaliser_institut
 from .candidats import Candidats
 
 
@@ -124,6 +124,8 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
 
         # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
             date = formaliser_date(date=date, annee=annee, annee_election=annee_election)
+        # Formalisation du nom de l'institut de sondage
+            institut = formaliser_institut(institut=institut)
 
         # Analyse du sondage
             resultat, candidats = analyser_sondage(sondage=ligne, indice_meta=indice_meta, nom_candidats=noms_candidats_par_colonne, candidats=candidats)
