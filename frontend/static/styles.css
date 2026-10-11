@@ -34,6 +34,7 @@ body::before {
 }
 
 @media (max-width: 1000px) {
+  body {margin: 8px 1px;}
   body::before {
     width: 100vw;
     background-image: url('images/image_arriere_plan_tel.jpg');
@@ -94,7 +95,7 @@ main {
 @media (max-width: 1000px) {
   .titre{
     min-width: 0;
-    width: 100%;
+    width: 96%;
     padding: 2px 0;
     height: 34px;
     white-space: normal;
@@ -112,6 +113,11 @@ main {
     width: 96%;
     margin: 0 2%;
     min-width: 0;
+    padding: 10px 2px;
+  }
+
+  span {
+    font-size: smaller;
   }
 }
 
@@ -184,6 +190,7 @@ button {
 #svg_graphique {
   direction: ltr;
 }
+#graphique {touch-action: pan-x pan-y;}
 
 /* Info-bulle affichée au survol des points */
 .survol_points {
@@ -200,6 +207,10 @@ button {
 }
 .survol_points.visible {
   display: block;
+}
+
+@media (max-width: 1000px){
+  .survol_points{font-size: 10px;}
 }
 
 /* Éléments internes du SVG */
