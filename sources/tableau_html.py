@@ -10,7 +10,7 @@ from bs4 import Tag
 from .utilitaires import nettoyer_texte
 
 # Une cellule de la grille dépliée est soit une balise BeautifulSoup, soit None
-Cellule = [Tag | None]
+Cellule = Tag | None
 LigneGrille = list[Cellule]
 GrilleTableau = list[LigneGrille]
 
