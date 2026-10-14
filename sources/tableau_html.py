@@ -4,15 +4,15 @@ Fonctions bas niveau pour manipuler des tableaux HTML issus de Wikipédia :
 - extraction du texte d'une cellule (avec repli sur les images/liens).
 """
 
-from typing import List, Optional
+
 from bs4 import Tag
 
 from .utilitaires import nettoyer_texte
 
 # Une cellule de la grille dépliée est soit une balise BeautifulSoup, soit None
-Cellule = Optional[Tag]
-LigneGrille = List[Cellule]
-GrilleTableau = List[LigneGrille]
+Cellule = [Tag | None]
+LigneGrille = list[Cellule]
+GrilleTableau = list[LigneGrille]
 
 
 def deplier_tableau(tableau: Tag) -> GrilleTableau:
@@ -71,10 +71,10 @@ def deplier_tableau(tableau: Tag) -> GrilleTableau:
 def ligne_est_uniquement_entete(ligne: LigneGrille) -> bool:
     """Retourne True si toutes les cellules de la ligne sont des <th>."""
     type_ligne = [element.name for element in ligne]
-    return all([element == 'th' for element in type_ligne])
+    return all(element == 'th' for element in type_ligne)
 
 
-def lecture_tableau(tableau: GrilleTableau) -> List[List[str]]:
+def lecture_tableau(tableau: GrilleTableau) -> list[list[str]]:
     """
     Transforme une grille de cellules (BeautifulSoup) en tableau (liste de liste) de chaine de caractère. Les entêtes et les lignes de sondages sont séparés.
     ### Paramètrse d'entrée:
@@ -85,8 +85,8 @@ def lecture_tableau(tableau: GrilleTableau) -> List[List[str]]:
         - "sondages" : lignes de sondages du tableau
     """
 # Initialisation des sorties
-    tableau_formatte = list()
-    entete = list()
+    tableau_formatte = []
+    entete = []
 # Parcours du tableau pour en extraire uniquement le texte
     for ligne in tableau:
         ligne_texte = [nettoyer_texte(element.get_text()) for element in ligne]

@@ -1,7 +1,8 @@
+from functools import lru_cache
+
+import requests_cache
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-import requests_cache
-from functools import lru_cache
 
 from sources import lecture_page_sondage
 
@@ -25,7 +26,7 @@ def get_sondages_second_tour(annee: str):
     """
     Endpoint pour récupérer les sondages du second tour de l'élection présidentielle.
     """
-    return {"message": f"Récupération des sondages du second tour n'est pas encore implémentée."}
+    return {"message": "Récupération des sondages du second tour n'est pas encore implémentée."}
 
 app.frontend("/", directory="frontend")
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")

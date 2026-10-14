@@ -4,14 +4,19 @@ Analyse métier d'un tableau de sondages déjà "déplié" (cf. tableau_html.py)
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+
 from bs4 import Tag
 
+from .candidats import Candidats
 from .config import ENTETES_NON_CANDIDATS
 from .tableau_html import deplier_tableau, lecture_tableau
-from .utilitaires import formaliser_date, separer_nombre_texte, formaliser_valeur, sondage_recent, formaliser_institut
-from .candidats import Candidats
-
+from .utilitaires import (
+    formaliser_date,
+    formaliser_institut,
+    formaliser_valeur,
+    separer_nombre_texte,
+    sondage_recent,
+)
 
 
 @dataclass
@@ -21,7 +26,7 @@ class Sondage:
     institut: str
     date: str
     liste_candidats: list[str]
-    resultat: Dict[str, float] = field(default_factory=dict)
+    resultat: dict[str, float] = field(default_factory=dict)
 
     def vers_dictionnaire(self) -> dict:
         """Convertit l'objet en dictionnaire simple, prêt pour la sortie JSON."""
@@ -33,10 +38,10 @@ class Sondage:
         }
 
 
-def identifier_colonnes_meta(entetes: List[str]) -> list[int]:
+def identifier_colonnes_meta(entetes: list[str]) -> list[int]:
     """Repère les indices des colonnes "Institut", "Date" et "Échantillon"."""
 
-    def trouver_colonne(*mots_cles: str) -> Optional[int]:
+    def trouver_colonne(*mots_cles: str) -> int | None:
         for indice, entete in enumerate(entetes):
             if any(mot_cle in entete.lower() for mot_cle in mots_cles):
                 return indice
@@ -72,7 +77,7 @@ def analyser_sondage(sondage: list[str], indice_meta: list[dict[str,float|str]],
     return resultat_sondage, candidats
 
 
-def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str, annee_election: str) -> dict[str,List[Sondage]|list[str]]:
+def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str, annee_election: str) -> dict[str,list[Sondage]|list[str]]:
     """
     Analyse un tableau HTML de sondages (déjà repéré comme "wikitable") et retourne la liste des Sondage qu'il contient (une entrée par ligne, donc une entrée par hypothèse lorsqu'un sondage en teste plusieurs).
     ### Paramètres d'entrée:
@@ -93,7 +98,7 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
         indice_meta = identifier_colonnes_meta(dictionnaire_tableau.get("entete",[]))
 
     # Récupération des indices des candidats
-        colonnes_candidats: List[int] = []
+        colonnes_candidats: list[int] = []
     # Dictionnaire des candidats avec comme clef, l'indice auquel ils sont dans le tableau sondages du dictionnaire
         noms_candidats_par_colonne = {}
         for indice, element in enumerate(dictionnaire_tableau.get("entete", [])):
@@ -103,7 +108,7 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
             noms_candidats_par_colonne[indice] = element
 
 
-        liste_candidats = [noms_candidats_par_colonne[indice] for indice in noms_candidats_par_colonne.keys()]
+        liste_candidats = [noms_candidats_par_colonne[indice] for indice in noms_candidats_par_colonne]
         candidats.ajouter_candidats(liste_candidats=liste_candidats)
 
         sondages: list[Sondage] = []
@@ -111,8 +116,7 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
 
         for ligne in dictionnaire_tableau.get("sondages"):
         # Suppression des lignes vides ou remplies par un seul mot (annoncent des candidatures ...)
-            if not ligne or ligne[0]==ligne[1]: continue
-            elif None in ligne or len(ligne) < len(indice_meta): continue
+            if not ligne or ligne[0]==ligne[1] or None in ligne or len(ligne) < len(indice_meta): continue
 
         # Récupération de l'institut et de la date du sondage
             institut = ligne[indice_meta[0]]
@@ -138,5 +142,5 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
 
     except Exception as e:
         nom_fichier = e.__traceback__.tb_frame.f_code.co_filename.replace('c:\\Users\\godef\\Documents\\projets_python\\api_sondages_presidentielles\\sources\\','')
-        raise ValueError(f'Erreur à la ligne {e.__traceback__.tb_lineno} du fichier {nom_fichier} :\n {str(e)}\n')
+        raise ValueError(f'Erreur à la ligne {e.__traceback__.tb_lineno} du fichier {nom_fichier} :\n {e!s}\n')
 

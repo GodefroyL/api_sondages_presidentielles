@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Récupère les sondages du premier tour de l'élection présidentielle
 française de 2027 depuis la page Wikipédia dédiée, et produit un
@@ -22,14 +21,20 @@ Usage :
     python main.py --sortie resultat.json => enregistre le résultat dans un fichier
 """
 
-import requests
-from bs4 import BeautifulSoup
 from functools import lru_cache
 
-from .config import DELAI_MAXIMUM_REQUETE, EN_TETE_HTTP, TITRE_SECTION, URL_PAGE_WIKIPEDIA
+import requests
+from bs4 import BeautifulSoup
+
 from .analyse_sondages import Sondage, analyser_tableau_sondage
-from .section_wikipedia import trouver_tableaux_section
 from .candidats import Candidats
+from .config import (
+    DELAI_MAXIMUM_REQUETE,
+    EN_TETE_HTTP,
+    TITRE_SECTION,
+    URL_PAGE_WIKIPEDIA,
+)
+from .section_wikipedia import trouver_tableaux_section
 
 
 @lru_cache(maxsize=3)
@@ -84,7 +89,7 @@ def main(annee: str = "2027") -> dict[int|str, dict|str]:
         return recuperer_sondages_premier_tour(annee)
     except Exception as e:
         nom_fichier = e.__traceback__.tb_frame.f_code.co_filename.replace('c:\\Users\\godef\\Documents\\projets_python\\api_sondages_presidentielles\\sources\\','')
-        message_erreur = f'Échec de la récupération des sondages, erreur à la ligne {e.__traceback__.tb_lineno} du fichier {nom_fichier} :\n{str(e)}\n'
+        message_erreur = f'Échec de la récupération des sondages, erreur à la ligne {e.__traceback__.tb_lineno} du fichier {nom_fichier} :\n{e!s}\n'
         return message_erreur
 
 

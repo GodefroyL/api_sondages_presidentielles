@@ -3,11 +3,10 @@ Localisation, dans le HTML de la page Wikipédia, de la section d'intérêt
 et des tableaux de sondages qu'elle contient (y compris ses sous-sections).
 """
 
-from typing import List
+
 from bs4 import BeautifulSoup, Tag
 
 from .utilitaires import normaliser_texte
-
 
 NIVEAUX_TITRES = ("h2", "h3", "h4")
 
@@ -31,7 +30,7 @@ def trouver_titre_section(soupe: BeautifulSoup, titre_section: str) -> Tag:
     raise RuntimeError(f"Impossible de trouver la section « {titre_section} » sur la page.")
 
 
-def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> List[Tag|str]:
+def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> list[Tag|str]:
     """
     Retourne la liste des tableaux `<table class="wikitable">` situés dans
     la section `titre_section`, y compris dans ses éventuelles
@@ -41,7 +40,7 @@ def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> List[T
     titre_section_html = trouver_titre_section(soupe, titre_section)
     niveau_section = int(titre_section_html.name[1])
 
-    tableaux: List[Tag|str] = []
+    tableaux: list[Tag|str] = []
     for element_suivant in titre_section_html.find_all_next():
         if element_suivant.name in NIVEAUX_TITRES:
             niveau_element = int(element_suivant.name[1])

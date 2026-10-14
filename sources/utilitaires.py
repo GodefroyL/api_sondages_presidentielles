@@ -3,9 +3,9 @@ Fonctions utilitaires de nettoyage et de normalisation de texte,
 indépendantes de toute logique HTML ou métier.
 """
 
+import datetime
 import re
 import unicodedata
-import datetime
 
 NOMBRE_MOIS = {'janvier': '01', 'fevrier': '02', 'février': '02', 'mars': '03', 'avril': '04', 'mai': '05', 'juin': '06', 'juillet': '07', 'aout': '08', 'août': '08', 'septembre': '09', 'octobre': '10', 'novembre': '11', 'decembre': '12', 'décembre': '12'}
 
@@ -33,7 +33,7 @@ def formaliser_date(date: str, annee: str, annee_election: str) -> str:
         return f"{int(jour):02d}/{mois}/{annee_date:04d}"
 
     except Exception as e:
-        raise ValueError(f'Erreur dans la fonction `formaliser_date` du fichier `utilitaire_texte.py`, à la ligne {e.__traceback__.tb_lineno} :\n {str(e)}\nParamètre :{date}\n')
+        raise ValueError(f'Erreur dans la fonction `formaliser_date` du fichier `utilitaire_texte.py`, à la ligne {e.__traceback__.tb_lineno} :\n {e!s}\nParamètre :{date}\n')
 
 
 def separer_nombre_texte(cellule: str) -> list[list[float|str]]:

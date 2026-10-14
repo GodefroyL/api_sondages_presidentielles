@@ -1,5 +1,6 @@
 import re
 
+
 class Candidats:
     """Classe pour la gestion des candidats"""
     def __init__(self):
@@ -18,7 +19,7 @@ class Candidats:
 
     def maj_liste_candidats(self) -> list[str]:
         """Fonction pour mettre à jour la liste des candidats"""
-        for clef in self.dictionnaire_candidats.keys():
+        for clef in self.dictionnaire_candidats:
             if self.dictionnaire_candidats.get(clef) not in self.liste_candidats:
                 self.info_candidats[self.dictionnaire_candidats.get(clef)] = {"nombre_sondages": 0, "sondage_recent": False}
                 self.liste_candidats.append(self.dictionnaire_candidats.get(clef))
@@ -28,7 +29,7 @@ class Candidats:
     def ajouter_candidats(self, liste_candidats: list) -> None:
         """Fonction pour ajouter des candidats dans le dictionnaire"""
         for candidat in liste_candidats:
-            if candidat not in self.dictionnaire_candidats.keys(): self.maj_dictionnaire(candidat=candidat)
+            if candidat not in self.dictionnaire_candidats: self.maj_dictionnaire(candidat=candidat)
 
 
     @staticmethod
@@ -44,7 +45,7 @@ class Candidats:
         - ancien_nom: nom du candidat utilisé dans la liste des candidats
         - nouveau_nom: nom qui remplace le précédent
         """
-        for clef in self.dictionnaire_candidats.keys():
+        for clef in self.dictionnaire_candidats:
             if self.dictionnaire_candidats.get(clef) == ancien_nom: self.dictionnaire_candidats[clef] = nouveau_nom.replace('(',' (').replace('  ',' ')
             self.maj_liste_candidats()
 
@@ -74,7 +75,7 @@ class Candidats:
                     self.changer_nom_base(nom, candidat)
                     self.dictionnaire_candidats[candidat] = candidat
                 else: self.dictionnaire_candidats[candidat] = self.base_liste_candidats[nom]
-                return None
+                return
         self.dictionnaire_candidats[candidat] = candidat.replace('(',' (').replace('  ',' ')
         self.maj_liste_candidats()
 
