@@ -33,7 +33,7 @@ class Sondage:
         }
 
 
-def identifier_colonnes_meta(entetes: List[str]) -> tuple[Optional[int], Optional[int], Optional[int]]:
+def identifier_colonnes_meta(entetes: List[str]) -> list[int]:
     """Repère les indices des colonnes "Institut", "Date" et "Échantillon"."""
 
     def trouver_colonne(*mots_cles: str) -> Optional[int]:
@@ -112,11 +112,11 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
         for ligne in dictionnaire_tableau.get("sondages"):
         # Suppression des lignes vides ou remplies par un seul mot (annoncent des candidatures ...)
             if not ligne or ligne[0]==ligne[1]: continue
-            elif None in ligne or len(ligne < len(indice_meta)): continue
+            elif None in ligne or len(ligne) < len(indice_meta): continue
 
         # Récupération de l'institut et de la date du sondage
-            institut = indice_meta[0]
-            date = indice_meta[1]
+            institut = ligne[indice_meta[0]]
+            date = ligne[indice_meta[1]]
 
         # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
             date = formaliser_date(date=date, annee=annee, annee_election=annee_election)
