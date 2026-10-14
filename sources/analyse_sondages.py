@@ -45,7 +45,7 @@ def identifier_colonnes_meta(entetes: List[str]) -> tuple[Optional[int], Optiona
     colonne_institut = trouver_colonne("sondeur", "institut")
     colonne_date = trouver_colonne("date")
     colonne_echantillon = trouver_colonne("echantillon", "échantillon")
-    return colonne_institut, colonne_date, colonne_echantillon
+    return [colonne_institut, colonne_date, colonne_echantillon]
 
 
 def analyser_sondage(sondage: list[str], indice_meta: list[dict[str,float|str]], nom_candidats: dict[int,str], candidats: Candidats):
@@ -90,18 +90,15 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
         dictionnaire_tableau = lecture_tableau(tableau_deplie)
 
     # Récupération des indices des colonnes "Institut", "Date" et "Échantillon"
-        colonne_institut, colonne_date, colonne_echantillon = identifier_colonnes_meta(dictionnaire_tableau.get("entete",[]))
-        indice_meta = [colonne_institut, colonne_date, colonne_echantillon]
+        indice_meta = identifier_colonnes_meta(dictionnaire_tableau.get("entete",[]))
 
     # Récupération des indices des candidats
         colonnes_candidats: List[int] = []
     # Dictionnaire des candidats avec comme clef, l'indice auquel ils sont dans le tableau sondages du dictionnaire
         noms_candidats_par_colonne = {}
         for indice, element in enumerate(dictionnaire_tableau.get("entete", [])):
-            if indice in (colonne_institut, colonne_date, colonne_echantillon):
-                continue
-            if element in ENTETES_NON_CANDIDATS or element == "":
-                continue
+            if indice in indice_meta or element in ENTETES_NON_CANDIDATS or element == "": continue
+
             colonnes_candidats.append(indice)
             noms_candidats_par_colonne[indice] = element
 
@@ -113,14 +110,13 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
         liste_instituts: set[str] = set()
 
         for ligne in dictionnaire_tableau.get("sondages"):
-            if not ligne:continue
+        # Suppression des lignes vides ou remplies par un seul mot (annoncent des candidatures ...)
+            if not ligne or ligne[0]==ligne[1]: continue
+            elif None in ligne or len(ligne < len(indice_meta)): continue
 
-        # Récupération date et institut de sondage
-            institut = ligne[colonne_institut] if colonne_institut is not None and colonne_institut < len(ligne) else ""
-            date = ligne[colonne_date] if colonne_date is not None and colonne_date < len(ligne) else ""
-
-        # Suppression des lignes remplies par un seul mot (annoncent des candidatures ...)
-            if institut == date: continue
+        # Récupération de l'institut et de la date du sondage
+            institut = indice_meta[0]
+            date = indice_meta[1]
 
         # Conservation uniquement de la date de fin du sondage (ex: "du 1er au 3 mars" -> "3 mars")
             date = formaliser_date(date=date, annee=annee, annee_election=annee_election)
@@ -130,11 +126,9 @@ def analyser_tableau_sondage(tableau_html: Tag, candidats: Candidats, annee: str
         # Analyse du sondage
             resultat, candidats = analyser_sondage(sondage=ligne, indice_meta=indice_meta, nom_candidats=noms_candidats_par_colonne, candidats=candidats)
 
-            if not resultat: continue
-
             candidats_sonde = [element.get('nom') for element in resultat]
         # Ajout du sondage pour chaque candidat sondé afin de connaitre le nombre de sondages pour chaque candidat
-            for candidat in candidats_sonde: candidats.ajout_sondage_candidat(candidat=candidat, sondage_recent=sondage_recent(date, annee_election))
+            candidats.ajout_sondage_candidat(candidats=candidats_sonde, sondage_recent=sondage_recent(date, annee_election))
 
             sondages.append(Sondage(institut=institut, date=date, liste_candidats=candidats_sonde, resultat=resultat))
 

@@ -43,13 +43,12 @@ def trouver_tableaux_section(soupe: BeautifulSoup, titre_section: str) -> List[T
 
     tableaux: List[Tag|str] = []
     for element_suivant in titre_section_html.find_all_next():
-        if element_suivant is titre_section_html:
-            continue
         if type(element_suivant.get('id'))==str and 'Année_' in element_suivant.get('id'):
+            print(element_suivant.name)
+            input("Continuer ?")
             tableaux.append(element_suivant.get('id').strip().replace('Année_',''))
-            continue
 
-        if element_suivant.name in NIVEAUX_TITRES:
+        elif element_suivant.name in NIVEAUX_TITRES:
             niveau_element = int(element_suivant.name[1])
             if niveau_element <= niveau_section:
                 break

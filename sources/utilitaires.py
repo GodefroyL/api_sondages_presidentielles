@@ -7,34 +7,31 @@ import re
 import unicodedata
 import datetime
 
-def formaliser_date(date: str, annee: str, annee_election: str)->str:
+NOMBRE_MOIS = {'janvier': '01', 'fevrier': '02', 'février': '02', 'mars': '03', 'avril': '04', 'mai': '05', 'juin': '06', 'juillet': '07', 'aout': '08', 'août': '08', 'septembre': '09', 'octobre': '10', 'novembre': '11', 'decembre': '12', 'décembre': '12'}
+
+def formaliser_date(date: str, annee: str, annee_election: str) -> str:
     """
-    Fonction pour formalier la date de la manière suivante:
-    - 3 septembre 2026 => 03/09/2026
+    Formalise une date au format JJ/MM/AAAA.
+    Exemples :
+        '3 septembre 2026' -> '03/09/2026'
+        '1er août' -> '01/08/2026' si annee='2026'
+        '26 mars - 28 mars' -> '28/03/2026'
+
+    Les années sont décalées pour ramener les élections sur un calendrier de référence 2027.
     """
-    nombre_mois = {'janvier': '01', 'fevrier': '02', 'mars': '03', 'avril': '04', 'mai': '05', 'juin': '06', 'juillet': '07', 'aout': '08', 'septembre': '09', 'octobre': '10', 'novembre': '11', 'decembre': '12'}
     try:
-    # On conserve seulement le jour de fin du sondage quand il y a la date du début (ex: 26 mars - 28 mars)
-        if '-' in date: date_formalisee = date[date.index('-'):][1:]
-        else: date_formalisee = date
-    # Suppression des accents
-        date_formalisee = date_formalisee.replace('é','e').replace('û','u').lower().split(' ')
-    # Suppression des éléments vides
-        date_formalisee = [element for element in date_formalisee if element != '']
-    # Remplacement de '1er' par '1'
-        date_formalisee[0] = date_formalisee[0].replace('er','')
-    # Remplacement du nom du mois par son numéro
-        date_formalisee[1] = nombre_mois.get(date_formalisee[1])
-    # Si l'année n'est pas précisée dans la date, on l'ajoute
-        if len(date_formalisee) == 2: date_formalisee.append(annee)
+    # Garder la date de fin si une plage est indiquée et séparer les éléments
+        elements = date.rsplit('-', 1)[-1].strip().lower().split()
 
-    # On ajoute la différence entre l'année de l'élection et 2027 pour que les différentes éléctions soient comparables sur le même calendrier
-        if annee_election != '2027':
-            date_formalisee[-1] = str(int(date_formalisee[-1])+(2027-int(annee_election)))
+        jour = elements[0].removesuffix('er')
+        mois = NOMBRE_MOIS.get(elements[1])
+        annee_date = int(elements[2]) if len(elements) == 3 else int(annee)
 
-        date_formalisee = '/'.join(date_formalisee)
-        if len(date_formalisee)==9: date_formalisee = '0'+date_formalisee
-        return date_formalisee
+        # Décalage vers l'année électorale de référence 2027
+        annee_date += 2027 - int(annee_election)
+
+        return f"{int(jour):02d}/{mois}/{annee_date:04d}"
+
     except Exception as e:
         raise ValueError(f'Erreur dans la fonction `formaliser_date` du fichier `utilitaire_texte.py`, à la ligne {e.__traceback__.tb_lineno} :\n {str(e)}\nParamètre :{date}\n')
 
@@ -45,7 +42,7 @@ def separer_nombre_texte(cellule: str) -> list[list[float|str]]:
     - cellule: cellule contenant du texte à analyser
     ### Sortie:
     - resultat: Liste des paires valeur nom du candidat dans la cellule [[nom, valeur],...]"""
-    # Trouve toutes les paires (nombre, texte)
+# Trouve toutes les paires (nombre, texte)
     paires = re.findall(r'(\d+\.?\d*)([A-Za-zÀ-ÖØ-öø-ÿ ]+)', cellule.replace(',','.').replace('<','').replace('>',''))
     resultat = []
 # Pour chaque paire, on ajoute la valeur converti en float et le nom du candidat dans la liste résultat qui sera renvoyée
