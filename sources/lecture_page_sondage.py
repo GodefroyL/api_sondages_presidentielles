@@ -47,14 +47,14 @@ def recuperer_page_html(url: str) -> BeautifulSoup:
 
 @lru_cache(maxsize=3)
 def recuperer_sondages_premier_tour(
-    annee: str = "2027",
+    annee_election: str = "2027",
     url: str = URL_PAGE_WIKIPEDIA,
     titre_section: str = TITRE_SECTION,
 ) -> dict[int, dict]:
     """
     Fonction principale : télécharge la page, repère les tableaux de la section demandée, les analyse, puis retourne le dictionnaire final numéroté à partir de 1.
     """
-    contenu_page = recuperer_page_html(url+annee)
+    contenu_page = recuperer_page_html(url+annee_election)
     tableaux = trouver_tableaux_section(contenu_page, titre_section)
 
 # Initialisation des sorties
@@ -62,11 +62,11 @@ def recuperer_sondages_premier_tour(
     liste_instituts: set[str] = set()
     candidats = Candidats()
 
-    date = annee
-    for _, tableau in enumerate(tableaux, start=1):
+    date = annee_election
+    for _, tableau in enumerate(tableaux):
         if type(tableau)==str: date = tableau
         else:
-            analyse_tableau_sondage = analyser_tableau_sondage(tableau_html=tableau, candidats=candidats, annee=date, annee_election=annee)
+            analyse_tableau_sondage = analyser_tableau_sondage(tableau_html=tableau, candidats=candidats, annee=date, annee_election=annee_election)
             liste_sondages.extend(analyse_tableau_sondage.get('sondages'))
             for institut in analyse_tableau_sondage.get("instituts",[]): liste_instituts.add(institut)
             candidats = analyse_tableau_sondage.get("candidats")
@@ -76,7 +76,7 @@ def recuperer_sondages_premier_tour(
     liste_candidats = [candidat for candidat in candidats.liste_candidats if candidat != "" and candidats.info_candidats[candidat]["nombre_sondages"]>=50 or candidats.info_candidats[candidat]["sondage_recent"]==True]
 
     return {
-        "annee": annee,
+        "annee": annee_election,
         "tour": 1,
         "liste candidats": liste_candidats,
         "liste_instituts": list(liste_instituts),
