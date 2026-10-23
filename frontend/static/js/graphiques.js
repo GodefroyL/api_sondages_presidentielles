@@ -29,6 +29,34 @@ const ZOOM_X_MAX = 10;
 const ZOOM_Y_MIN = 1;   // 1 = le graphique tient exactement dans la hauteur de base
 const ZOOM_Y_MAX = 20;
 
+// Mapping des couleurs politiques pour les principaux partis français
+const COULEURS_POLITIQUES = {
+  // Extrême gauche
+  "LO": "hsl(0, 100%, 45%)",       // Rouge (Lutte Ouvrière)
+  "NPA": "hsl(0, 100%, 45%)",      // Rouge
+  "PCF": "hsl(0, 100%, 45%)",      // Rouge (Parti Communiste)
+  "LFI": "hsl(0, 100%, 40%)",      // Rouge foncé (La France Insoumise)
+  "PS": "hsl(330, 100%, 50%)",     // Rose (Parti Socialiste)
+  "PP": "hsl(15, 100%, 50%)",      // Orange-rouge (Place Publique/Glucksmann)
+  "EELV": "hsl(140, 70%, 35%)",    // Vert (Europe Écologie Les Verts)
+  "REN": "hsl(30, 100%, 50%)",     // Orange (Renaissance/Macron)
+  "RE": "hsl(30, 100%, 50%)",      // Orange
+  "HOR": "hsl(200, 100%, 45%)",    // Bleu clair (Horizons/Philippe)
+  "MoDem": "hsl(45, 100%, 50%)",   // Jaune-orange (Bayrou)
+  "LR": "hsl(220, 100%, 40%)",     // Bleu (Les Républicains)
+  "DLF": "hsl(220, 100%, 35%)",    // Bleu foncé (Debout la France)
+  "RN": "hsl(220, 100%, 20%)",     // Bleu marine (Rassemblement National)
+  "REC": "hsl(220, 100%, 10%)",    // Bleu marine (Reconquête/Zemmour)
+};
+
+// Styles de courbe par année d'élection
+const STYLES_PAR_ANNEE = {
+  2017: { strokeWidth: 2, strokeDasharray: "5,3", opacity: 0.7 },  // Pointillés, moins opaque
+  2022: { strokeWidth: 2, strokeDasharray: "5,3", opacity: 0.7 },  // Pointillés
+  2027: { strokeWidth: 3, strokeDasharray: "none", opacity: 1.0 }, // Trait plein, plus épais
+};
+
+
 const etat = {
   courbes: null,
   legendes: null,
@@ -59,7 +87,7 @@ export function tracerGraphique(listeDeCourbes, listeDeLegendes) {
 // Tout ce qui dépend du zoom est ici : appelé au premier tracé et à chaque zoom
 function dessinerTout() {
   const elements = recupererElementsHtml();
-  const couleurs = genererCouleurs(etat.legendes.length);
+  const couleurs = genererCouleurs(etat.legendes);
   const courbesNormalisees = normaliserCourbes(etat.courbes);
   const courbesMoyennees = courbesNormalisees.map(moyennerPointsParDate);
   const echelles = calculerEchelles(courbesNormalisees);
@@ -86,14 +114,28 @@ function recupererElementsHtml() {
   };
 }
 
-// Les teintes sont réparties uniformément sur le cercle chromatique (360°), ce qui garantit des couleurs toujours distinctes quel que soit le nombre de courbes (contrairement à une palette fixe, limitée en nombre de couleurs).
-function genererCouleurs(nombreCourbes) {
-  const couleurs = [];
-  for (let indice = 0; indice < nombreCourbes; indice++) {
-    const teinte = Math.round((indice * 360) / nombreCourbes);
-    couleurs.push(`hsl(${teinte}, 70%, 45%)`);
+// Génère une couleur pour un candidat en fonction de son parti
+function genererCouleurPourCandidat(nom) {
+  // Extraire le parti entre parenthèses (ex: "Le Pen (RN)" -> "RN")
+  const match = nom.match(/\(([A-Z]+)\)/);
+  const parti = match ? match[1] : null;
+
+  // Si le parti est connu, utiliser sa couleur
+  if (parti && COULEURS_POLITIQUES[parti]) {
+    return COULEURS_POLITIQUES[parti];
   }
-  return couleurs;
+
+  // Sinon, générer une couleur basée sur le nom (pour les candidats sans parti identifié)
+  let hash = 0;
+  for (let i = 0; i < nom.length; i++) {
+    hash = nom.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const teinte = Math.abs(hash) % 360;
+  return `hsl(${teinte}, 70%, 45%)`;
+}
+
+function genererCouleurs(listeDeLegendes) {
+  return listeDeLegendes.map(nom => genererCouleurPourCandidat(nom));
 }
 
 // Tous les points sont conservés (y compris plusieurs points à la même date) : ils servent ensuite pour l'affichage au survol.
@@ -211,7 +253,7 @@ function dessinerGraphiquePrincipal(elementGraphique, courbesNormalisees, courbe
   contenu += dessinerGrilleHorizontale(echelles, dimensions, positionY);
   contenu += dessinerGraduationsMensuellesAxeX(echelles, dimensions, positionX);
   contenu += dessinerLigneAxeX(dimensions);
-  contenu += dessinerCourbes(courbesMoyennees, couleurs, positionX, positionY);
+  contenu += dessinerCourbes(courbesMoyennees, couleurs, positionX, positionY, etat.legendes);
   contenu += dessinerPointsSurvolables(courbesNormalisees, listeDeLegendes, couleurs, positionX, positionY);
 
   svgPrincipal.innerHTML = contenu;
@@ -259,11 +301,29 @@ function dessinerLigneAxeX(dimensions) {
 }
 
 // Tracé de la ligne (polyline) de chaque courbe, à partir des points moyennés par date
-function dessinerCourbes(courbesMoyennees, couleurs, positionX, positionY) {
+// Tracé de la ligne (polyline) de chaque courbe, à partir des points moyennés par date
+function dessinerCourbes(courbesMoyennees, couleurs, positionX, positionY, legendes) {
   let contenu = '';
   courbesMoyennees.forEach((courbe, indiceCourbe) => {
     const pointsLigne = courbe.map(point => `${positionX(point.date)},${positionY(point.valeur)}`).join(' ');
-    contenu += `<polyline class="courbe" points="${pointsLigne}" stroke="${couleurs[indiceCourbe]}" data-courbe="${indiceCourbe}" />`;
+    
+    // Extraire l'année depuis le nom du candidat (ex: "Le Pen (RN) 2027" -> 2027)
+    const nomCandidat = legendes[indiceCourbe];
+    const anneeMatch = nomCandidat.match(/(\d{4})/);
+    const annee = anneeMatch ? parseInt(anneeMatch[0]) : 2027;
+    
+    // Récupérer le style pour cette année
+    const style = STYLES_PAR_ANNEE[annee] || STYLES_PAR_ANNEE[2027];
+    
+    contenu += `<polyline 
+      class="courbe" 
+      points="${pointsLigne}" 
+      stroke="${couleurs[indiceCourbe]}"
+      stroke-width="${style.strokeWidth}"
+      stroke-dasharray="${style.strokeDasharray}"
+      opacity="${style.opacity}"
+      data-courbe="${indiceCourbe}"
+    />`;
   });
   return contenu;
 }
