@@ -7,7 +7,8 @@ import { preparation_courbes } from "./gestion_donnees.js";
 import { tracerGraphique } from "./graphiques.js"
 
 const ANNEES = [2027, 2022];
-const TOUR = 'premier_tour/';
+const LIEN = 'donnees/'
+const TOUR = '_premier_tour.json';
 
 // Candidats cochés par défaut.
 const CANDIDATS_PAR_DEFAUT = {
@@ -27,7 +28,7 @@ const etat = {
 async function charger_election(annee) {
     try {
         // Promise.resolve : fonctionne que charger_donnees soit synchrone ou asynchrone
-        let url = TOUR+annee
+        let url = LIEN+annee+TOUR
         const donnees = await Promise.resolve(charger_donnees(url));
         return donnees;
     } catch (erreur) {
@@ -124,8 +125,10 @@ function afficher_instituts() {
 
 // Années et candidats
 function afficher_panneau_annees() {
-    const panneau = document.getElementById("panneau_droite");
-    panneau.innerHTML = "";
+    const boutons = document.getElementById("boutons");
+    const candidats = document.getElementById("candidats")
+    boutons.innerHTML = "";
+    candidats.innerHTML = "";
 
     ANNEES.forEach(annee => {
         const bloc = document.createElement("div");
@@ -148,7 +151,6 @@ function afficher_panneau_annees() {
             bouton.disabled = true;
             bouton.title = "Données indisponibles";
         }
-
         etat.candidats[annee].forEach(nom => {
             const c = creer_case(nom, etat.candidats_coches[annee].has(nom), coche => {
                 if (coche) {
@@ -163,14 +165,16 @@ function afficher_panneau_annees() {
 
         bouton.addEventListener("click", () => {
             const ouvrir = liste.style.display === "none";
+            const listes = document.getElementsByClassName('liste_candidats')
+            console.log(listes)
+            for (const l of listes) {l.style.display = "none"}
             liste.style.display = ouvrir ? "flex" : "none";
             bouton.setAttribute("aria-expanded", String(ouvrir));
             bouton.classList.toggle("actif", ouvrir);
         });
 
-        bloc.appendChild(bouton);
-        bloc.appendChild(liste);
-        panneau.appendChild(bloc);
+        boutons.appendChild(bouton);
+        candidats.appendChild(liste);
     });
 }
 
@@ -207,18 +211,3 @@ async function initialiser_accueil() {
 
 if (document.readyState === "loading") {document.addEventListener("DOMContentLoaded", initialiser_accueil);}
 else {initialiser_accueil();}
-
-let timer;
-
-window.addEventListener("resize", () => {
-    clearTimeout(timer);
-
-    timer = setTimeout(() => {
-        const details = document.querySelector("details");
-        if (window.innerWidth <= 1000) {
-            details.removeAttribute("open");
-        } else {
-            details.setAttribute("open", "");
-        }
-    }, 200);
-});

@@ -22,20 +22,25 @@
         <script>
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
-        <div class="conteneur conteneur--gauche">
-            <div class="zone_graphique" id="zone_graphique">
-                <div class="axe_fixe" id="axe_fixe"></div>
-                <div class="graphique" id="graphique"></div>
+        <div class="contenu">
+            <div class="conteneur conteneur--graphique">
+                <div class="zone_graphique" id="zone_graphique">
+                    <div class="axe_fixe" id="axe_fixe"></div>
+                    <div class="graphique" id="graphique"></div>
+                </div>
+                <div class="legende_graphique" id="legende_graphique"></div>
+                <div class="survol_points" id="survol_points"></div>
+                <details>
+                    <summary class="bouton_institut">Instituts</summary>
+                    <div class="instituts" id="instituts"></div>
+                </details>
+                <span>Source : <a href="https://fr.wikipedia.org/wiki/Liste_de_sondages_sur_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027">Page wikipédia </a>(en changeant l'année pour les élections précédentes)</span>
             </div>
-            <div class="legende_graphique" id="legende_graphique"></div>
-            <div class="survol_points" id="survol_points"></div>
-            <details open>
-                <summary class="bouton_institut">Instituts</summary>
-                <div class="instituts" id="instituts"></div>
-            </details>
-            <span>Source : <a href="https://fr.wikipedia.org/wiki/Liste_de_sondages_sur_l%27%C3%A9lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027">Page wikipédia </a>(en changeant l'année pour les élections précédentes)</span>
+            <div class="conteneur conteneur--candidats" id="panneau_candidats">
+                <div class="boutons" id="boutons"></div>
+                <div class="candidats" id="candidats"></div>
+            </div>
         </div>
-        <div class="conteneur conteneur--droit" id="panneau_droite"></div>
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4994392991547793"
             crossorigin="anonymous"></script>
         <!-- annonce_site_sondage -->

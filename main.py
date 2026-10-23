@@ -30,6 +30,7 @@ def get_sondages_second_tour(annee: str):
 
 app.frontend("/", directory="frontend")
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+app.mount("/donnees", StaticFiles(directory="donnees"), name="donnees")
 
 if __name__ == "__main__":
     sondages = get_sondages_premer_tour("2027")
