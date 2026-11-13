@@ -125,10 +125,11 @@ function recupererElementsHtml() {
   };
 }
 
-// Hauteurs des zones : le graphique et son axe Y gardent la hauteur de base, la fenêtre choisie y tient en entier
+// Hauteurs des zones : le graphique, son axe Y et le curseur vertical gardent la hauteur de base, la fenêtre choisie y tient en entier
 function preparerZones(elements) {
   elements.graphique.style.height = DIMENSIONS_BASE.hauteur + 'px';
   elements.axeFixe.style.height = DIMENSIONS_BASE.hauteur + 'px';
+  elements.curseurY.style.height = DIMENSIONS_BASE.hauteur + 'px';
 }
 
 // Génère une couleur pour un candidat en fonction de son parti

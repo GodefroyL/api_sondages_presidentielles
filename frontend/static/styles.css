@@ -171,11 +171,11 @@ button {
   font-family: system-ui, sans-serif;
 }
 
-/* Colonne fixe de l'axe Y et de son curseur de réglage : ne défile jamais */
-.colonne_axe_ordonnees {
-  display: flex;
-  flex-direction: column;
+/* Curseur vertical de réglage de l'axe Y : barre pleine hauteur, à gauche des étiquettes */
+.curseur_y {
   flex: 0 0 auto;
+  width: 18px;
+  margin: 0 2px;
 }
 
 .axe_fixe {
@@ -209,18 +209,13 @@ button {
   height: 20px;
   margin: 0 5px 2px;
 }
-.curseur_y {
-  flex: 1 1 auto;
-  min-height: 24px;
-  margin-left: 2px;
-}
 .curseur_double {
   position: relative;
 }
 .curseur_piste {
   position: absolute;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid #cccccc;
+  background: #e4eaf1;
+  border: 1px solid #b0bdcc;
   border-radius: 4px;
   touch-action: none;
 }
@@ -256,6 +251,7 @@ button {
   background: #2b6cb0;
   border: 1px solid #1a4a7a;
   border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   cursor: grab;
   touch-action: none;
 }
