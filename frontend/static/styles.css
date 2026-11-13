@@ -192,15 +192,16 @@ button {
   min-width: 0;
 }
 
-/* Zone du graphique : grille + courbes + axe X, à la taille de la fenêtre choisie */
+/* Zone du graphique : grille + courbes + axe X, à la taille de la fenêtre choisie.
+   overflow visible : les étiquettes d'axe posées près des bords ne sont pas rognées. */
 .graphique {
-  overflow: hidden;
+  overflow: visible;
   margin: 5px;
 }
 @media (max-width: 1000px) {
   .graphique {margin: 2px;}
 }
-#svg_graphique, #svg_axe_y { display: block; }
+#svg_graphique, #svg_axe_y { display: block; overflow: visible; }
 
 /* Curseurs de zoom (scrollbarres à deux poignées) : sous l'axe X et à gauche de l'axe Y */
 .curseur_x {

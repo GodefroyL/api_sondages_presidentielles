@@ -66,6 +66,8 @@ const etat = {
   fenetre: null   // fenêtre affichée : { dateDebut, dateFin, valeurDebut, valeurFin }
 };
 
+let ecouteurRedimensionnementInstalle = false;
+
 // ---- Fonction principale : orchestre l'ensemble du tracé ----
 export function tracerGraphique(listeDeCourbes, listeDeLegendes) {
   etat.courbes = listeDeCourbes;
@@ -78,6 +80,12 @@ export function tracerGraphique(listeDeCourbes, listeDeLegendes) {
   etat.fenetre = fenetreParDefaut(bornes);
   creerCurseurs(elements, bornes);
   dessinerTout();
+
+  // La largeur du SVG est mesurée au tracé : on redessine quand la fenêtre du navigateur change
+  if (!ecouteurRedimensionnementInstalle) {
+    window.addEventListener('resize', () => {if (etat.courbes) {dessinerTout();}});
+    ecouteurRedimensionnementInstalle = true;
+  }
 }
 
 // Tout ce qui dépend de la fenêtre choisie : appelé au premier tracé et à chaque réglage des curseurs
@@ -310,28 +318,59 @@ function dessinerGrilleHorizontale(echelles, dimensions, positionY) {
   return contenu;
 }
 
-// Graduations et étiquettes de l'axe X : un pas (en mois) adapté à la largeur de la fenêtre
+// Graduations et étiquettes de l'axe X : en jours pour les fenêtres courtes, sinon en mois,
+// avec un pas adapté à la largeur de la fenêtre pour que les étiquettes restent lisibles et toujours présentes
 function dessinerGraduationsAxeX(echelles, dimensions, positionX) {
-  const pasMois = choisirPasMois(echelles, dimensions);
+  const parJour = (echelles.dateMax - echelles.dateMin) / JOUR < 31;
+  const pas = parJour ? choisirPasJours(echelles, dimensions) : choisirPasMois(echelles, dimensions);
+  const dates = parJour ? datesGraduationsParJour(echelles, pas) : datesGraduationsParMois(echelles, pas);
+  const formater = parJour
+    ? date => date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+    : date => (pas >= 12 ? `${date.getFullYear()}` : date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }));
+
   let contenu = '';
+  dates.forEach(date => {
+    const x = positionX(date);
+    contenu += `<line class="grille" x1="${x}" y1="${dimensions.margeHaut}" x2="${x}" y2="${dimensions.hauteur - dimensions.margeBas}" />`;
+    contenu += `<text class="etiquette_axe" x="${x}" y="${dimensions.hauteur - dimensions.margeBas + 16}" text-anchor="middle">${formater(date)}</text>`;
+  });
+  return contenu;
+}
+
+// Graduations mensuelles : un début de mois toutes les `pasMois` années-mois, dans la fenêtre
+function datesGraduationsParMois(echelles, pasMois) {
+  const dates = [];
   const dateCourante = new Date(echelles.dateMin);
   dateCourante.setDate(1);
   dateCourante.setHours(0, 0, 0, 0);
 
   while (dateCourante <= echelles.dateMax) {
     const moisGlobal = dateCourante.getFullYear() * 12 + dateCourante.getMonth();
-    if (dateCourante >= echelles.dateMin && moisGlobal % pasMois === 0) {
-      const x = positionX(dateCourante);
-      contenu += `<line class="grille" x1="${x}" y1="${dimensions.margeHaut}" x2="${x}" y2="${dimensions.hauteur - dimensions.margeBas}" />`;
-      const etiquette = pasMois >= 12
-        ? `${dateCourante.getFullYear()}`
-        : dateCourante.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
-      contenu += `<text class="etiquette_axe" x="${x}" y="${dimensions.hauteur - dimensions.margeBas + 16}" text-anchor="middle">${etiquette}</text>`;
-    }
+    if (dateCourante >= echelles.dateMin && moisGlobal % pasMois === 0) {dates.push(new Date(dateCourante));}
     dateCourante.setMonth(dateCourante.getMonth() + 1);
   }
+  return dates;
+}
 
-  return contenu;
+// Graduations journalières, alignées sur un multiple entier de `pasJours` jours
+function datesGraduationsParJour(echelles, pasJours) {
+  const pasMs = pasJours * JOUR;
+  const dates = [];
+  for (let t = Math.ceil(echelles.dateMin.getTime() / pasMs) * pasMs; t <= echelles.dateMax.getTime(); t += pasMs) {
+    dates.push(new Date(t));
+  }
+  return dates;
+}
+
+// Choix du pas des graduations (en jours) pour que les étiquettes ne se chevauchent pas
+function choisirPasJours(echelles, dimensions) {
+  const largeurUtile = dimensions.largeurTotale - dimensions.margeGauche - dimensions.margeDroite;
+  const joursFenetre = Math.max(1, (echelles.dateMax - echelles.dateMin) / JOUR);
+  const candidats = [1, 2, 5, 10, 15];
+  for (const pas of candidats) {
+    if ((largeurUtile * pas) / joursFenetre >= 55) {return pas;}
+  }
+  return 15;
 }
 
 // Choix du pas des graduations (en mois) pour que les étiquettes ne se chevauchent pas
