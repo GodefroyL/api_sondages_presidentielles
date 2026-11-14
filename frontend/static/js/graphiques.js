@@ -190,7 +190,7 @@ function calculerEchelles(courbesNormalisees) {
   const toutesLesValeurs = tousLesPoints.map(point => point.valeur);
 
   const dateMin = new Date(Math.min(...toutesLesDates));
-  const dateMax = new Date(Math.max(...toutesLesDates));
+  const dateMax = new Date(Math.max(...toutesLesDates)); 
   const valeurMinBrute = Math.min(...toutesLesValeurs);
   const valeurMaxBrute = Math.max(...toutesLesValeurs);
 
@@ -204,9 +204,13 @@ function calculerEchelles(courbesNormalisees) {
 
 // Fenêtre correspondant à l'ensemble des données (état initial des curseurs)
 function fenetreParDefaut(bornes) {
+  const dateDebut = new Date(bornes.dateMax);
+  dateDebut.setMonth(dateDebut.getMonth() - 3);
+  if (dateDebut < bornes.dateMin) {dateDebut = new Date(bornes.dateMin);}
+
   return {
-    dateDebut: new Date(bornes.dateMin),
-    dateFin: new Date(bornes.dateMax),
+    dateDebut,
+    dateFin: new Date(bornes.dateMax.setDate(bornes.dateMax.getDate() + 1)),
     valeurDebut: bornes.valeurMin,
     valeurFin: bornes.valeurMax
   };
