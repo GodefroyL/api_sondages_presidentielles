@@ -68,7 +68,7 @@ main {
   min-width: 60%;
   max-width: 70%;
   height: calc(100vh - 50px);
-  padding: 10px 5px 10px 5px;
+  padding: 10px 5px;
 }
 
 .contenu {
@@ -79,11 +79,11 @@ main {
 
 .conteneur {
   width: 100%;
+  height: min-content;
   border-radius: 15px;
   background-color: rgba(200, 200, 200, 0.5);
   margin: 3px;
   padding: 10px;
-  height: fit-content;
 }
 
 .conteneur--graphique {
@@ -165,6 +165,7 @@ button {
   position: relative;
   background-color: rgba(200, 200, 200, 0.7);
   width: 100%;
+  min-height: min-content;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
