@@ -93,12 +93,13 @@ main {
   max-height: 80%;
 }
 
-.conteneur--candidats {
+.conteneur--info {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   background-color: rgba(200, 200, 200, 0.7);
   overflow-y: auto;
 }
+.candidats{display: flex;flex-direction: row;}
 
 @media (max-width: 1000px) {
   .titre{
