@@ -68,7 +68,7 @@ main {
   min-width: 60%;
   max-width: 70%;
   height: calc(100vh - 50px);
-  padding: 10px 5px 10px 5px;
+  padding: 10px 5px;
 }
 
 .contenu {
@@ -79,11 +79,11 @@ main {
 
 .conteneur {
   width: 100%;
+  height: min-content;
   border-radius: 15px;
   background-color: rgba(200, 200, 200, 0.5);
   margin: 3px;
   padding: 10px;
-  height: fit-content;
 }
 
 .conteneur--graphique {
@@ -93,12 +93,13 @@ main {
   max-height: 80%;
 }
 
-.conteneur--candidats {
+.conteneur--info {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   background-color: rgba(200, 200, 200, 0.7);
   overflow-y: auto;
 }
+.candidats{display: flex;flex-direction: row;}
 
 @media (max-width: 1000px) {
   .titre{
@@ -165,38 +166,106 @@ button {
   position: relative;
   background-color: rgba(200, 200, 200, 0.7);
   width: 100%;
+  min-height: min-content;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   font-family: system-ui, sans-serif;
 }
 
-/* Colonne fixe de l'axe Y : ne défile jamais */
+/* Curseur vertical de réglage de l'axe Y : barre pleine hauteur, à gauche des étiquettes */
+.curseur_y {
+  flex: 0 0 auto;
+  width: 18px;
+  margin: 0 2px;
+}
+
 .axe_fixe {
   flex: 0 0 auto;
   border-right: 1px solid #eeeeee;
   z-index: 2;
 }
 
-/* Zone scrollable : grille + courbes + axe X */
+/* Colonne du graphique et de son curseur de réglage horizontal */
+.colonne_graphique {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Zone du graphique : grille + courbes + axe X, à la taille de la fenêtre choisie.
+   overflow visible : les étiquettes d'axe posées près des bords ne sont pas rognées. */
 .graphique {
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  cursor: grab;
-  direction: rtl;
+  overflow: visible;
   margin: 5px;
 }
 @media (max-width: 1000px) {
   .graphique {margin: 2px;}
 }
-.graphique:active {
+#svg_graphique, #svg_axe_y { display: block; overflow: visible; }
+
+/* Curseurs de zoom (scrollbarres à deux poignées) : sous l'axe X et à gauche de l'axe Y */
+.curseur_x {
+  flex: 0 0 auto;
+  height: 20px;
+  margin: 0 5px 2px;
+}
+.curseur_double {
+  position: relative;
+}
+.curseur_piste {
+  position: absolute;
+  background: #e4eaf1;
+  border: 1px solid #b0bdcc;
+  border-radius: 4px;
+  touch-action: none;
+}
+.curseur_double:not(.curseur_double--vertical) .curseur_piste {
+  left: 0;
+  right: 0;
+  top: calc(50% - 4px);
+  height: 8px;
+}
+.curseur_double--vertical .curseur_piste {
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 4px);
+  width: 8px;
+}
+.curseur_intervalle {
+  position: absolute;
+  background: rgba(90, 150, 210, 0.45);
+  border-radius: 4px;
+}
+.curseur_double:not(.curseur_double--vertical) .curseur_intervalle {
+  top: 0;
+  bottom: 0;
+}
+.curseur_double--vertical .curseur_intervalle {
+  left: 0;
+  right: 0;
+}
+.curseur_poignee {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #2b6cb0;
+  border: 1px solid #1a4a7a;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+  touch-action: none;
+}
+.curseur_poignee:active {
   cursor: grabbing;
 }
-#svg_graphique {
-  direction: ltr;
+.curseur_double:not(.curseur_double--vertical) .curseur_poignee {
+  top: calc(50% - 7px);
 }
-#graphique {touch-action: pan-x pan-y;}
+.curseur_double--vertical .curseur_poignee {
+  left: calc(50% - 7px);
+}
 
 /* Info-bulle affichée au survol des points */
 .survol_points {
