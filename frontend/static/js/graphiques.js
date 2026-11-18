@@ -204,7 +204,7 @@ function calculerEchelles(courbesNormalisees) {
 
 // Fenêtre correspondant à l'ensemble des données (état initial des curseurs)
 function fenetreParDefaut(bornes) {
-  const dateDebut = new Date(bornes.dateMax);
+  let dateDebut = new Date(bornes.dateMax);
   dateDebut.setMonth(dateDebut.getMonth() - 3);
   if (dateDebut < bornes.dateMin) {dateDebut = new Date(bornes.dateMin);}
 
